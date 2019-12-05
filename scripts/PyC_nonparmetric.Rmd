@@ -1,0 +1,205 @@
+---
+title: "Untitled"
+author: "Anna Talucci"
+date: "12/3/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Pole Creek Fire Data
+
+The purpose of this study was to see if the amount / chemical structure of PyC that is produced during a forest fire depends on whether the trees were alive at the time of fire.
+
+-	Two samples (1. scorched bark and 2. charred wood from the base of the tree) were collected from each of three trees that had been killed by beetles prior to the Pole Creek Fire (PCF). Beetle kill was confirmed by evidence of J-shaped galleries under the bark. 
+-	Two samples (1. Scorched bark and 2. Wood from under scorched bark @ base of tree) were collected from each of three trees that had been alive at the time of the fire. 
+
+Samples were dried O/N in oven at 50C on 6/20/18
+
+PCF samples were ground in a ball grinder on 6/21/18
+- NOTE: the scorched bark from Tree 4 and Tree 5 (live @ time of fire) still contained a good bit of sap residue. Ball grinding resulted in a tacky mashed up thing. Transfer to scin vial and dry @ 50C for an additional 3 days. Still seemed tacky and heterogeneous. Flash froze in liquid nitrogen and ground in mortar and pestle to a fine powder. 
+
+
+
+
+
+```{r warning=FALSE,message=FALSE,echo=FALSE,fig.height=3,fig.width=3}
+#Metadata
+#jh.number:	index number used for internal tracking
+#name:	sample name used during analysis
+#field.fire:	was the sample collected from the pole creek fire (PCF) or from the trees anna burned in the lab (lab)
+#tree:	individual tree number combined with the pcf/lab designation
+#base:	two of the samples anna burned in the lab were designated as 'base' - I'm not exactly sure what that means
+#live.dead:	was the tree alive or dead at the time of the fire / burning
+#bark.char:	was the sample from the bark or exposed char/wood under burned bark
+#bpca.carbon:	g total bpca / kg carbon
+#bpca.soil:	g total bpca / kg soil
+#b6.total:	b6ca:total bpca ratio
+
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(gridExtra)
+library(lme4)
+
+library(lsmeans)
+library(statmod)
+library(car)
+library(DHARMa)
+library(GGally)
+library(MASS)
+library(cowplot)
+library(multcompView)
+
+```
+
+```{r}
+#import data
+bk=read.csv("../data/beetle_kill.csv", header=TRUE,sep=",",na.strings=c("", "NA"))
+```
+
+```{r}
+#separate out the polecreek fire data
+pcf=subset(bk,field.fire=="PCF")
+```
+
+```{r}
+pcf
+```
+
+```{r}
+ggplot(pcf, aes(x = live.dead, y = bpca.carbon, color = live.dead)) +
+  geom_boxplot() +
+  geom_jitter(size=3) +
+  labs(title = "PyC on a per Carbon basis", x=(NULL), y= "g BPCA /\nkg Carbon") +
+  scale_color_manual(values = c("tan", "darkgreen")) + 
+  theme_bw() + 
+  theme(legend.position = "none") +  
+theme(panel.grid.major = element_blank())+
+    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
+        axis.text.x = element_text(size = 10, color = "black"),
+        axis.text.y = element_text(size = 10, color = "black"),
+        axis.line = element_line(colour = "black"))
+  
+```
+
+```{r}
+ggplot(pcf, aes(x = live.dead, y = bpca.soil, color = live.dead)) +
+  geom_boxplot() +
+  geom_jitter(size=3) +
+  labs(title = "PyC on a per material basis", x=(NULL), y= "g BPCA /\nkg material") +
+  scale_color_manual(values = c("tan", "darkgreen")) + 
+  theme_bw() + 
+  theme(legend.position = "none") +  
+theme(panel.grid.major = element_blank())+
+    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
+        axis.text.x = element_text(size = 10, color = "black"),
+        axis.text.y = element_text(size = 10, color = "black"),
+        axis.line = element_line(colour = "black"))
+  
+```
+
+
+```{r}
+ggplot(pcf, aes(x = live.dead, y = b6.total, color = live.dead)) +
+  geom_boxplot() +
+  geom_jitter(size=3) +
+  labs(title = "ACI of PyC", x=(NULL), y= "g B6CA /\nTotal BPCA") +
+  scale_color_manual(values = c("tan", "darkgreen")) + 
+  theme_bw() + 
+  theme(legend.position = "none") +  
+theme(panel.grid.major = element_blank())+
+    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
+        axis.text.x = element_text(size = 10, color = "black"),
+        axis.text.y = element_text(size = 10, color = "black"),
+        axis.line = element_line(colour = "black"))
+  
+```
+
+
+
+## Test of Normality
+```{r}
+shapiro.test(pcf$bpca.carbon)
+```
+
+```{r}
+shapiro.test(pcf$bpca.soil)
+```
+
+```{r}
+shapiro.test(pcf$b6.total)
+```
+
+## Analysis
+
+```{r}
+library(effsize)
+library(rcompanion)
+```
+
+
+## Per Carbon
+```{r}
+wilcox.test(bpca.carbon ~ live.dead, data = pcf)
+```
+
+```{r}
+VD.A(d = pcf$bpca.carbon, f = pcf$live.dead)
+
+```
+
+```{r}
+vda(bpca.carbon ~ live.dead, data = pcf)
+```
+```{r}
+wilcoxonR(x  = pcf$bpca.carbon,
+          g  = pcf$live.dead,
+          ci = TRUE)
+```
+
+
+
+## Per material
+```{r}
+wilcox.test(bpca.soil ~ live.dead, data = pcf)
+```
+
+```{r}
+VD.A(d = pcf$bpca.soil, f = pcf$live.dead)
+
+```
+
+```{r}
+vda(bpca.soil ~ live.dead, data = pcf)
+```
+
+
+
+```{r}
+wilcoxonR(x  = pcf$bpca.soil,
+          g  = pcf$live.dead,
+          ci = TRUE)
+```
+
+
+```{r}
+wilcox.test(b6.total ~ live.dead, data = pcf)
+```
+
+```{r}
+wilcoxonR(x  = pcf$b6.total,
+          g  = pcf$live.dead,
+          ci = TRUE)
+```
+
+
+
+```{r}
+
+```
+
+

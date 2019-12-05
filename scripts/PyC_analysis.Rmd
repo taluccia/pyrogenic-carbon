@@ -1,0 +1,717 @@
+---
+title: "Beetle Kill"
+author: "Lauren"
+date: "8/14/2018"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Pole Creek Fire Data
+
+The purpose of this study was to see if the amount / chemical structure of PyC that is produced during a forest fire depends on whether the trees were alive at the time of fire.
+
+-	Two samples (1. scorched bark and 2. charred wood from the base of the tree) were collected from each of three trees that had been killed by beetles prior to the Pole Creek Fire (PCF). Beetle kill was confirmed by evidence of J-shaped galleries under the bark. 
+-	Two samples (1. Scorched bark and 2. Wood from under scorched bark @ base of tree) were collected from each of three trees that had been alive at the time of the fire. 
+
+Samples were dried O/N in oven at 50C on 6/20/18
+
+PCF samples were ground in a ball grinder on 6/21/18
+- NOTE: the scorched bark from Tree 4 and Tree 5 (live @ time of fire) still contained a good bit of sap residue. Ball grinding resulted in a tacky mashed up thing. Transfer to scin vial and dry @ 50C for an additional 3 days. Still seemed tacky and heterogeneous. Flash froze in liquid nitrogen and ground in mortar and pestle to a fine powder. 
+
+
+
+
+
+```{r warning=FALSE,message=FALSE,echo=FALSE,fig.height=3,fig.width=3}
+#Metadata
+#jh.number:	index number used for internal tracking
+#name:	sample name used during analysis
+#field.fire:	was the sample collected from the pole creek fire (PCF) or from the trees anna burned in the lab (lab)
+#tree:	individual tree number combined with the pcf/lab designation
+#base:	two of the samples anna burned in the lab were designated as 'base' - I'm not exactly sure what that means
+#live.dead:	was the tree alive or dead at the time of the fire / burning
+#bark.char:	was the sample from the bark or exposed char/wood under burned bark
+#bpca.carbon:	g total bpca / kg carbon
+#bpca.soil:	g total bpca / kg soil
+#b6.total:	b6ca:total bpca ratio
+
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(gridExtra)
+library(lme4)
+
+library(lsmeans)
+library(statmod)
+library(car)
+library(DHARMa)
+library(GGally)
+library(MASS)
+library(cowplot)
+library(multcompView)
+
+```
+
+```{r}
+#import data
+bk=read.csv("../data/beetle_kill.csv", header=TRUE,sep=",",na.strings=c("", "NA"))
+```
+
+```{r}
+#separate out the polecreek fire data
+pcf=subset(bk,field.fire=="PCF")
+```
+
+```{r}
+pcf
+```
+
+# One explanatory variable
+## Model 1 - BPCA per Carbon
+```{r}
+mod1 = glm(bpca.carbon ~ live.dead, data = pcf, family = gaussian)
+```
+
+### Residuals with DHARMa
+```{r, include=FALSE}
+mod1.res = simulateResiduals(fittedModel = mod1, n = 500)
+mod1.res$scaledResiduals
+mod1.res$scaledResidualsNormal
+```
+
+In the plot below we are looking for the points in the QQ plot to fall along the RED linen. In the Residuals vs.predicted plot were are looking for the lines to be relatively horizontal. All looks good. 
+```{r}
+plotSimulatedResiduals(simulationOutput = mod1.res)
+```
+
+```{r}
+testDispersion(mod1.res)
+```
+
+### Sumamry
+```{r}
+summary(mod1)
+```
+
+```{r}
+summary(lsmeans(mod1, pairwise ~ live.dead), type = "response", infer = TRUE, level = .90, adjust = "bon")
+```
+
+```{r}
+data.frame(summary(lsmeans(mod1, pairwise ~ live.dead),type = "response", infer = TRUE, level = .9, adjust = "bon"))
+```
+
+### Model 1 - Tukey
+```{r}
+lsmeans(mod1, pairwise ~ live.dead, adjust = "tukey")
+marginal = lsmeans(mod1, ~ live.dead)
+```
+
+
+## Model 2 - BPCA per Material
+```{r}
+mod2 = glm(bpca.soil ~ live.dead, data = pcf, family = gaussian)
+```
+
+### Residuals with DHARMa
+```{r, include=FALSE}
+mod2.res = simulateResiduals(fittedModel = mod2, n = 250)
+mod2.res$scaledResiduals
+mod2.res$scaledResidualsNormal
+```
+
+In the plot below we are looking for the points in the QQ plot to fall along the RED linen. In the Residuals vs.predicted plot were are looking for the lines to be relatively horizontal. All looks good. 
+```{r}
+plotSimulatedResiduals(simulationOutput = mod2.res)
+```
+
+```{r}
+testDispersion(mod2.res)
+```
+
+### Sumamry
+```{r}
+summary(mod2)
+```
+
+```{r}
+summary(lsmeans(mod2, pairwise ~ live.dead), type = "response", infer = TRUE, level = .90, adjust = "bon")
+```
+
+```{r}
+data.frame(summary(lsmeans(mod2, pairwise ~ live.dead),type = "response", infer = TRUE, level = .9, adjust = "bon"))
+```
+
+### Model 2 - Tukey
+```{r}
+lsmeans(mod2, pairwise ~ live.dead, adjust = "tukey")
+marginal2 = lsmeans(mod2, ~ live.dead)
+
+
+```
+
+## Model 3 - B6 total
+```{r}
+mod3 = glm(b6.total ~ live.dead, data = pcf, family = gaussian)
+```
+
+### Residuals with DHARMa
+```{r, include=FALSE}
+mod3.res = simulateResiduals(fittedModel = mod3, n = 250)
+mod3.res$scaledResiduals
+mod3.res$scaledResidualsNormal
+```
+
+In the plot below we are looking for the points in the QQ plot to fall along the RED linen. In the Residuals vs.predicted plot were are looking for the lines to be relatively horizontal. All looks good. 
+```{r}
+plotSimulatedResiduals(simulationOutput = mod3.res)
+```
+
+```{r}
+testDispersion(mod3.res)
+```
+
+### Sumamry
+```{r}
+summary(mod3)
+```
+
+```{r}
+summary(lsmeans(mod3, pairwise ~ live.dead),type = "response", infer = TRUE, level = .9, adjust = "bon")
+```
+
+```{r}
+data.frame(summary(lsmeans(mod3, pairwise ~ live.dead),type = "response", infer = TRUE, level = .9, adjust = "bon"))
+```
+
+### Model 3 - Tukey
+```{r}
+lsmeans(mod3, pairwise ~ live.dead, adjust = "tukey")
+
+marginal3 = lsmeans(mod3, ~ live.dead)
+```
+
+# Two Explanatory variables
+
+## Model 1 - BPCA per Carbon
+```{r}
+fit1 = glm(bpca.carbon ~ live.dead + bark.char, data = pcf, family = gaussian)
+```
+
+### Residuals with DHARMa
+```{r, include=FALSE}
+fit1.res = simulateResiduals(fittedModel = fit1, n = 500)
+fit1.res$scaledResiduals
+fit1.res$scaledResidualsNormal
+```
+
+In the plot below we are looking for the points in the QQ plot to fall along the RED linen. In the Residuals vs.predicted plot were are looking for the lines to be relatively horizontal. All looks good. 
+```{r}
+plotSimulatedResiduals(simulationOutput = fit1.res)
+```
+
+```{r}
+testDispersion(fit1.res)
+```
+
+### Sumamry
+```{r}
+summary(fit1)
+```
+```{r}
+data.frame(summary(lsmeans(fit1, pairwise ~ live.dead|bark.char),type = "response", infer = TRUE, level = .9, adjust = "bon"))
+```
+
+```{r}
+summary(lsmeans(fit1, pairwise ~ live.dead|bark.char), type = "response", infer = TRUE, level = .90, adjust = "bon")
+```
+### Model 1 - Tukey
+```{r}
+lsmeans(fit1, pairwise ~ live.dead|bark.char, adjust = "tukey")
+marginal = lsmeans(fit1, ~ live.dead|bark.char)
+```
+
+
+
+### Graph
+
+```{r}
+(fit1_graph = data.frame(summary(lsmeans(fit1, pairwise ~ live.dead|bark.char),type = "response")))
+```
+
+```{r}
+levels(fit1_graph$lsmeans.live.dead)[levels(fit1_graph$lsmeans.live.dead)=="dead"] = "Charred"
+levels(fit1_graph$lsmeans.live.dead)[levels(fit1_graph$lsmeans.live.dead)=="live"] = "Scorched"
+
+( fit1_graph1 = dplyr::select(fit1_graph, lsmeans.live.dead:lsmeans.asymp.UCL))
+
+
+
+names(fit1_graph1)[1:7] = c("live.dead", "bark.char", "response", "se", "df", "lcl", "ucl")
+fit1_graph1
+
+
+```
+
+
+
+```{r}
+(graph1 = ggplot(fit1_graph1, aes(x = live.dead, y = response, color = live.dead) ) + 
+   geom_errorbar(width = .2, lwd = .75, aes(ymin = lcl, ymax = ucl), position = position_dodge(width = .75)) + 
+geom_point(size = 3, position = position_dodge(width = .75)) + 
+    facet_wrap(~bark.char) +
+  labs(title = "PyC on a per Carbon basis", x=(NULL), y= "g BPCA /\nkg C") +
+  scale_color_manual(values = c("tan", "darkgreen")) + 
+  theme_bw() + 
+  theme(legend.position = "none") +  
+theme(panel.grid.major = element_blank()) +
+    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
+        axis.text.x = element_text(size = 10, color = "black"),
+        axis.text.y = element_text(size = 10, color = "black"),
+        axis.line = element_line(colour = "black"))
+  )
+```
+
+
+## Model 2 - BPCA per Material
+```{r}
+fit2 = glm(bpca.soil ~ live.dead + bark.char, data = pcf, family = gaussian)
+```
+
+### Residuals with DHARMa
+```{r, include=FALSE}
+fit2.res = simulateResiduals(fittedModel = fit2, n = 250)
+fit2.res$scaledResiduals
+fit2.res$scaledResidualsNormal
+```
+
+In the plot below we are looking for the points in the QQ plot to fall along the RED linen. In the Residuals vs.predicted plot were are looking for the lines to be relatively horizontal. All looks good. 
+```{r}
+plotSimulatedResiduals(simulationOutput = fit2.res)
+```
+
+```{r}
+testDispersion(fit2.res)
+```
+
+### Sumamry
+```{r}
+summary(fit2)
+```
+
+```{r}
+data.frame(summary(lsmeans(fit2, pairwise ~ live.dead|bark.char),type = "response", infer = TRUE, level = .9, adjust = "bon"))
+```
+
+```{r}
+summary(lsmeans(fit2, pairwise ~ live.dead|bark.char), type = "response", infer = TRUE, level = .90, adjust = "bon")
+```
+
+```{r}
+( fit2data = data.frame(summary(lsmeans(fit2, pairwise ~ live.dead|bark.char), type = "response", infer = TRUE, level = .9, adjust = "bon")) )
+```
+### Model 2 - Tukey
+```{r}
+lsmeans(fit2, pairwise ~ live.dead|bark.char, adjust = "tukey")
+marginal2 = lsmeans(fit2, ~ live.dead|bark.char)
+
+
+```
+
+
+### Graph
+
+```{r}
+(fit2_graph = data.frame(summary(lsmeans(fit2, pairwise ~ live.dead|bark.char),type = "response")))
+```
+
+```{r}
+levels(fit2_graph$lsmeans.live.dead)[levels(fit2_graph$lsmeans.live.dead)=="dead"] = "Charred"
+levels(fit2_graph$lsmeans.live.dead)[levels(fit2_graph$lsmeans.live.dead)=="live"] = "Scorched"
+
+( fit2_graph2 = dplyr::select(fit2_graph, lsmeans.live.dead:lsmeans.asymp.UCL))
+
+
+
+names(fit2_graph2)[1:7] = c("live.dead", "bark.char", "response", "se", "df", "lcl", "ucl")
+fit2_graph2
+
+
+```
+
+```{r}
+(graph2 = ggplot(fit2_graph2, aes(x = live.dead, y = response, color = live.dead) ) + 
+   geom_errorbar(width = .2, lwd = .75, aes(ymin = lcl, ymax = ucl), position = position_dodge(width = .75)) + 
+geom_point(size = 3, position = position_dodge(width = .75)) + 
+    facet_wrap(~bark.char) +
+  labs(title = "PyC on a per material basis", x=(NULL), y= "g BPCA /\nkg material") +
+  scale_color_manual(values = c("tan", "darkgreen")) + 
+  theme_bw() + 
+  theme(legend.position = "none") +  
+theme(panel.grid.major = element_blank())+
+    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
+        axis.text.x = element_text(size = 10, color = "black"),
+        axis.text.y = element_text(size = 10, color = "black"),
+        axis.line = element_line(colour = "black"))
+  )
+```
+
+## Model 3 - B6 total
+```{r}
+fit3 = glm(b6.total ~ live.dead + bark.char, data = pcf, family = gaussian)
+```
+
+### Residuals with DHARMa
+```{r, include=FALSE}
+fit3.res = simulateResiduals(fittedModel = fit3, n = 250)
+fit3.res$scaledResiduals
+fit3.res$scaledResidualsNormal
+```
+
+In the plot below we are looking for the points in the QQ plot to fall along the RED linen. In the Residuals vs.predicted plot were are looking for the lines to be relatively horizontal. All looks good. 
+```{r}
+plotSimulatedResiduals(simulationOutput = fit3.res)
+```
+
+```{r}
+testDispersion(fit3.res)
+```
+
+### Sumamry
+```{r}
+summary(fit3)
+```
+```{r}
+summary(lsmeans(fit3, pairwise ~ live.dead|bark.char),type = "response", infer = TRUE, level = .9, adjust = "bon")
+```
+
+```{r}
+data.frame(summary(lsmeans(fit3, pairwise ~ live.dead|bark.char),type = "response", infer = TRUE, level = .9, adjust = "bon"))
+```
+### Model 3 - Tukey
+```{r}
+lsmeans(fit3, pairwise ~ live.dead|bark.char, adjust = "tukey")
+
+marginal3 = lsmeans(fit3, ~ live.dead|bark.char)
+```
+
+
+### Graph
+
+```{r}
+(fit3_graph = data.frame(summary(lsmeans(fit3, pairwise ~ live.dead|bark.char),type = "response")))
+```
+
+```{r}
+levels(fit3_graph$lsmeans.live.dead)[levels(fit3_graph$lsmeans.live.dead)=="dead"] = "Charred"
+levels(fit3_graph$lsmeans.live.dead)[levels(fit3_graph$lsmeans.live.dead)=="live"] = "Scorched"
+
+( fit3_graph3 = dplyr::select(fit3_graph, lsmeans.live.dead:lsmeans.asymp.UCL))
+
+names(fit3_graph3)[1:7] = c("live.dead", "bark.char", "response", "se", "df", "lcl", "ucl")
+fit3_graph3
+```
+
+```{r}
+(graph3 = ggplot(fit3_graph3, aes(x = live.dead, y = response, color = live.dead) ) + 
+   geom_errorbar(width = .2, lwd = .75, aes(ymin = lcl, ymax = ucl), position = position_dodge(width = .75)) + 
+geom_point(size = 3, position = position_dodge(width = .75)) + 
+    facet_wrap(~bark.char) +
+  labs(title = "ACI of PyC", x=(NULL), y= "g B6CA /\nTotal BPCA") +
+  scale_color_manual(values = c("tan", "darkgreen")) + 
+  theme_bw() + 
+  theme(legend.position = "none") +  
+theme(panel.grid.major = element_blank()) +
+  theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
+        axis.text.x = element_text(size = 10, color = "black"),
+        axis.text.y = element_text(size = 10, color = "black"),
+        axis.line = element_line(colour = "black"))
+  )
+```
+
+# Stat Figures
+```{r fig.height=5.25, fig.width=4.75}
+
+grid1 = cowplot::plot_grid(graph1, graph2, graph3, labels = c("A", "B", "C"), ncol = 1) 
+grid1
+```
+
+```{r eval=FALSE, include=FALSE}
+ggsave("../figs/2018-12-21_ch4_analysisfig.jpeg", plot = grid1, width = 6, height = 7, units = c("in"), dpi=600 )
+```
+
+```{r eval=FALSE, include=FALSE}
+ggsave("../figs/2019-01-20_ch4_analysisfig_science.jpeg", plot = grid1, width = 4.75, height = 5.25, units = c("in"), dpi=600 )
+```
+
+
+```{r fig.height=5.25, fig.width=4.75}
+grid1A = cowplot::plot_grid(graph1, graph2, graph3, labels = c("A", "B", "C"), ncol = 1) + 
+  draw_label("*", x = .93, y = .85, size = 36, fontface = "bold") +
+  draw_label("*", x = .5, y = .85, size = 36, fontface = "bold") + 
+  draw_label("*", x = .93, y = .51, size = 36, fontface = "bold") +
+  draw_label("*", x = .5, y = .51, size = 36, fontface = "bold") 
+
+grid1A
+```
+
+```{r eval=FALSE, include=FALSE}
+ggsave("../figs/2019-01-30_ch4_analysisfig_science_sig.jpeg", plot = grid1A, width = 4.75, height = 5.25, units = c("in"), dpi=600 )
+```
+
+# Graph Raw data
+```{r}
+head(pcf)
+```
+
+```{r}
+levels(pcf$live.dead)[levels(pcf$live.dead)=="dead"] = "Charred"
+levels(pcf$live.dead)[levels(pcf$live.dead)=="live"] = "Scorched"
+
+```
+
+```{r}
+ggplot(pcf, aes(x = live.dead, y = bpca.carbon, color = live.dead)) +
+  geom_boxplot() +
+  geom_jitter(size=3) +
+  labs(title = "PyC on a per Carbon basis", x=(NULL), y= "g BPCA /\nkg Carbon") +
+  scale_color_manual(values = c("tan", "darkgreen")) + 
+  theme_bw() + 
+  theme(legend.position = "none") +  
+theme(panel.grid.major = element_blank())+
+    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
+        axis.text.x = element_text(size = 10, color = "black"),
+        axis.text.y = element_text(size = 10, color = "black"),
+        axis.line = element_line(colour = "black"))
+  
+```
+```{r}
+ggplot(pcf, aes(x = live.dead, y = bpca.soil, color = live.dead)) +
+  geom_boxplot() +
+  geom_jitter(size=3) +
+  labs(title = "PyC on a per material basis", x=(NULL), y= "g BPCA /\nkg material") +
+  scale_color_manual(values = c("tan", "darkgreen")) + 
+  theme_bw() + 
+  theme(legend.position = "none") +  
+theme(panel.grid.major = element_blank())+
+    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
+        axis.text.x = element_text(size = 10, color = "black"),
+        axis.text.y = element_text(size = 10, color = "black"),
+        axis.line = element_line(colour = "black"))
+  
+```
+
+```{r}
+ggplot(pcf, aes(x = live.dead, y = b6.total, color = live.dead)) +
+  geom_boxplot() +
+  geom_jitter(size=3) +
+  labs(title = "ACI of PyC", x=(NULL), y= "g B6CA /\nTotal BPCA") +
+  scale_color_manual(values = c("tan", "darkgreen")) + 
+  theme_bw() + 
+  theme(legend.position = "none") +  
+theme(panel.grid.major = element_blank())+
+    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
+        axis.text.x = element_text(size = 10, color = "black"),
+        axis.text.y = element_text(size = 10, color = "black"),
+        axis.line = element_line(colour = "black"))
+  
+```
+
+```{r}
+plot1 = ggplot(pcf, aes(x = live.dead, y = bpca.carbon, color = live.dead)) +
+  geom_boxplot() +
+  geom_jitter(size=3) +
+  facet_wrap(~bark.char) +
+  labs(title = "PyC on a per Carbon basis", x=(NULL), y= "g BPCA /\nkg Carbon") +
+  scale_color_manual(values = c("tan", "darkgreen")) + 
+  theme_bw() + 
+  theme(legend.position = "none") +  
+theme(panel.grid.major = element_blank())+
+    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
+        axis.text.x = element_text(size = 10, color = "black"),
+        axis.text.y = element_text(size = 10, color = "black"),
+        axis.line = element_line(colour = "black"))
+  
+```
+
+```{r}
+plot2 = ggplot(pcf, aes(x = live.dead, y = bpca.soil, color = live.dead)) +
+  geom_boxplot() +
+  geom_jitter(size=3) +
+  facet_wrap(~bark.char) +
+  labs(title = "PyC on a per material basis", x=(NULL), y= "g BPCA /\nkg material") +
+  scale_color_manual(values = c("tan", "darkgreen")) + 
+  theme_bw() + 
+  theme(legend.position = "none") +  
+theme(panel.grid.major = element_blank())+
+    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
+        axis.text.x = element_text(size = 10, color = "black"),
+        axis.text.y = element_text(size = 10, color = "black"),
+        axis.line = element_line(colour = "black"))
+  
+```
+
+```{r}
+plot3 = ggplot(pcf, aes(x = live.dead, y = b6.total, color = live.dead)) +
+  geom_boxplot() +
+  geom_jitter(size=3) +
+  facet_wrap(~bark.char) +
+  labs(title = "ACI of PyC", x=(NULL), y= "g B6CA /\nTotal BPCA") +
+  scale_color_manual(values = c("tan", "darkgreen")) + 
+  theme_bw() + 
+  theme(legend.position = "none") +  
+theme(panel.grid.major = element_blank())+
+    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
+        axis.text.x = element_text(size = 10, color = "black"),
+        axis.text.y = element_text(size = 10, color = "black"),
+        axis.line = element_line(colour = "black"))
+  
+```
+
+# Raw Data Figures
+```{r fig.height=5.25, fig.width=4.75}
+
+grid2 = cowplot::plot_grid(plot1, plot2, plot3, labels = c("A", "B", "C"), ncol = 1) 
+grid2
+```
+```{r eval=FALSE, include=FALSE}
+ggsave("../figs/2018-12-21_ch4_rawdatafig.jpeg", plot = grid2, width = 6, height = 7, units = c("in"), dpi=600 )
+```
+
+```{r eval=FALSE, include=FALSE}
+ggsave("../figs/2019-01-28_ch4_rawdatafig_science.jpeg", plot = grid2, width = 4.75, height = 5.25, units = c("in"), dpi=600 )
+```
+# Other Figures
+
+```{r}
+ggplot(pcf, aes(x=live.dead, y=bpca.carbon, color=bark.char)) +
+  theme_bw() + 
+  ylab("g BPCA / kg C") +
+  xlab("") +
+  scale_color_manual(values=c("darkslateblue", "darkorange2")) +
+  geom_boxplot() +
+  theme(legend.position="bottom") +
+  theme(legend.title=element_blank()) +
+  theme(legend.text=element_text(size=10)) +
+  theme(axis.text=element_text(size=12),
+        axis.title=element_text(size=12,face="bold"),
+        plot.title = element_text(size=12,face="bold")) +
+  ggtitle("PyC on a per Carbon Basis")
+```
+
+```{r}
+ggplot(pcf, aes(x=live.dead, y=bpca.soil, color=bark.char)) +
+  theme_bw() + 
+  ylab("g BPCA / kg material") +
+  xlab("") +
+  scale_color_manual(values=c("darkslateblue", "darkorange2")) +
+  geom_boxplot() +
+  theme(legend.position="bottom") +
+  theme(legend.title=element_blank()) +
+  theme(legend.text=element_text(size=10)) +
+  theme(axis.text=element_text(size=12),
+        axis.title=element_text(size=12,face="bold"),
+        plot.title = element_text(size=12,face="bold")) +
+  ggtitle("PyC on a per Material Basis")
+```
+
+In the case of the trees that were dead at the time of fire "Wood" refers to charred material at the base of the tree that was exposed. In the case of trees that were alive at the time of fire, there was no exposed charred wood, so samples were collected from wood underneath the most charred section of bark as we assumed that would be the most thermally altered wood.
+
+It looks like the charred bark of trees that were dead at the time of fire contains a higher proportion of PyC than the charred bark of trees that were alive at the time of fire. For the live trees, the wood underneath that charred bark contains practically no PyC. For the dead trees, the exposed charred wood contains significantly more PyC than the charred bark on the same tree. Possibly the resin/sap in the bark protects it from fire? Maybe as the bark falls off after tree death, the tree is more vulnerable to deep charring and that's why we don't see any PyC in the wood under the bark of the live trees?
+
+
+```{r warning=FALSE,message=FALSE,echo=FALSE,fig.height=3,fig.width=3}
+ggplot(pcf, aes(x=live.dead, y=b6.total, color=bark.char)) +
+  theme_bw() + 
+  ylab("g B6CA / total BPCA") +
+  xlab("") +
+  scale_color_manual(values=c("darkslateblue", "darkorange2")) +
+  geom_boxplot() +
+  theme(legend.position="bottom") +
+  theme(legend.title=element_blank()) +
+  theme(legend.text=element_text(size=10)) +
+  theme(axis.text=element_text(size=12),
+        axis.title=element_text(size=12,face="bold"),
+        plot.title = element_text(size=12,face="bold")) +
+  ggtitle("ACI of PyC")
+
+```
+
+On the dead trees, the ACI of charred exposed wood was slightly higher than that of the charred bark. Again, maybe it's the sap/resin acting as a protection mechanism and keeping preventing further condesation of PyC? 
+
+For the live trees, you should really ignore the ACI of the wood because there's basically no PyC in the samples, it's just that of the veeeeery tiny amount that existed in some cases most of it was quantified as B6CA. 
+
+
+
+# Lauren's Figures 
+```{r}
+legend = ggplot(pcf, aes(x=live.dead, y=bpca.soil, color=bark.char)) +
+  theme_bw() + 
+  ylab("g BPCA / kg material") +
+  xlab("") +
+  scale_color_manual(values=c("darkslateblue", "darkorange2")) +
+  geom_boxplot() +
+  theme(legend.position="bottom") +
+  theme(legend.title=element_blank()) +
+  theme(legend.text=element_text(size=10)) +
+  theme(axis.text=element_text(size=12),
+        axis.title=element_text(size=12,face="bold"),
+        plot.title = element_text(size=12,face="bold")) +
+  ggtitle("PyC on a per Material Basis")
+```
+
+```{r}
+a = ggplot(pcf, aes(x=live.dead, y=bpca.carbon, color=bark.char)) +
+  theme_bw() + 
+  ylab("g BPCA / kg C") +
+  xlab("") +
+  scale_color_manual(values=c("darkslateblue", "darkorange2")) +
+  geom_boxplot() +
+  theme(legend.position="none") +
+  theme(legend.title=element_blank()) +
+  theme(legend.text=element_text(size=10)) +
+  theme(axis.text=element_text(size=12),
+        axis.title=element_text(size=12,face="bold"),
+        plot.title = element_text(size=12,face="bold")) +
+  ggtitle("PyC on a per Carbon Basis")
+```
+
+```{r}
+b = ggplot(pcf, aes(x=live.dead, y=bpca.soil, color=bark.char)) +
+  theme_bw() + 
+  ylab("g BPCA / kg material") +
+  xlab("") +
+  scale_color_manual(values=c("darkslateblue", "darkorange2")) +
+  geom_boxplot() +
+  theme(legend.position="none") +
+  theme(legend.title=element_blank()) +
+  theme(legend.text=element_text(size=10)) +
+  theme(axis.text=element_text(size=12),
+        axis.title=element_text(size=12,face="bold"),
+        plot.title = element_text(size=12,face="bold")) +
+  ggtitle("PyC on a per Material Basis")
+```
+
+
+
+```{r fig.height=3.5, fig.width=6}
+legend = get_legend(legend)
+( grid1 = cowplot::plot_grid(a, b, 
+           labels = c("A", "B"), ncol = 2, align = "h") )
+
+
+(grid2 = plot_grid(grid1, legend, ncol=1, rel_widths = c(1, .1), rel_heights = c(1, .05)) ) 
+```
+
+
+
+```{r eval=FALSE, include=FALSE}
+ggsave("../figs/2018-10-11_BPCA.png", plot = grid2 , width = 6, height = 3.5, units = c("in"), dpi=600 )
+```
+
+**THE END**
