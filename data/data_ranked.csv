@@ -1,0 +1,13 @@
+jh.number,name,field.fire,tree,base,live.dead,live.dead-edit,bark.char,bpca.carbon,rank.carbon,bpca.soil,rank.soil,b6.total,rank.total
+6615,"Beetle Kill 2018, PCF, Tree 5, Live@Fire, Wood",PCF,pcf.5,nobase,live,live,Wood,0.2,1,0.09,1,0.48,12
+6617,"Beetle Kill 2018, PCF, Tree 6, Live@Fire, Wood",PCF,pcf.6,nobase,live,live,Wood,0.4,2,0.19,2,0,1
+6613,"Beetle Kill 2018, PCF, Tree 4, Live@Fire, Wood",PCF,pcf.4,nobase,live,live,Wood,0.68,3,0.31,3,0.26,11
+6612,"Beetle Kill 2018, PCF, Tree 4, Live@Fire, Bark",PCF,pcf.4,nobase,live,live,Bark,4.88,4,3.76,4,0.19,2
+6614,"Beetle Kill 2018, PCF, Tree 5, Live@Fire, Bark",PCF,pcf.5,nobase,live,live,Bark,6.89,5,3.89,5,0.22,8
+6616,"Beetle Kill 2018, PCF, Tree 6, Live@Fire, Bark",PCF,pcf.6,nobase,live,live,Bark,10.19,6,5.59,6,0.19,3
+6606,"Beetle Kill 2018, PCF, Tree 1, Beetle Killed, Bark",PCF,pcf.1,nobase,dead,dead,Bark,12.4,7,8.02,7,0.2,4
+6610,"Beetle Kill 2018, PCF, Tree 3, Beetle Killed, Bark",PCF,pcf.3,nobase,dead,dead,Bark,15.29,8,8.81,8,0.2,5
+6608,"Beetle Kill 2018, PCF, Tree 2, Beetle Killed, Bark",PCF,pcf.2,nobase,dead,dead,Bark,21.28,9,12.55,9,0.2,6
+6607,"Beetle Kill 2018, PCF, Tree 1, Beetle Killed, Char",PCF,pcf.1,nobase,dead,dead,Wood,33.91,10,25.1,11,0.23,9
+6611,"Beetle Kill 2018, PCF, Tree 3, Beetle Killed, Char",PCF,pcf.3,nobase,dead,dead,Wood,35.12,11,23.56,10,0.21,7
+6609,"Beetle Kill 2018, PCF, Tree 2, Beetle Killed, Char",PCF,pcf.2,nobase,dead,dead,Wood,35.9,12,25.82,12,0.23,10

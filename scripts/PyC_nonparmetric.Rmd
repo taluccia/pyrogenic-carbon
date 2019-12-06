@@ -145,7 +145,7 @@ library(asht)
 
 ## Per Carbon
 ```{r}
-wilcox.test(bpca.carbon ~ live.dead, data = pcf)
+wilcox.test(bpca.carbon ~ live.dead, data = pcf, mu=0, alt="two.sided" , conf.int=TRUE, conf.level=0.95, pairded=FALSE, exact=TRUE, correct = TRUE)
 ```
 
 ```{r}
@@ -170,7 +170,7 @@ wilcoxonR(x  = pcf$bpca.carbon,
 
 ## Per material
 ```{r}
-wilcox.test(bpca.soil ~ live.dead, data = pcf)
+wilcox.test(bpca.soil ~ live.dead, data = pcf, mu=0, alt="two.sided" , conf.int=TRUE, conf.level=0.95, pairded=FALSE, exact=TRUE, correct = TRUE)
 ```
 
 ```{r}
@@ -192,7 +192,7 @@ wilcoxonR(x  = pcf$bpca.soil,
 
 
 ```{r}
-wilcox.test(b6.total ~ live.dead, data = pcf)
+wilcox.test(b6.total ~ live.dead, data = pcf, mu=0, alt="two.sided" , conf.int=TRUE, conf.level=0.95, pairded=FALSE, exact=TRUE, correct = TRUE)
 ```
 
 ```{r}
