@@ -46,7 +46,7 @@ library(gridExtra)
 library(lme4)
 
 library(lsmeans)
-library(statmod)
+
 library(car)
 library(DHARMa)
 library(GGally)
@@ -139,12 +139,17 @@ shapiro.test(pcf$b6.total)
 ```{r}
 library(effsize)
 library(rcompanion)
+library(asht)
 ```
 
 
 ## Per Carbon
 ```{r}
 wilcox.test(bpca.carbon ~ live.dead, data = pcf)
+```
+
+```{r}
+wmwTest(bpca.carbon ~ live.dead, data = pcf, conf.int=TRUE, conf.level = 0.95)
 ```
 
 ```{r}
