@@ -134,7 +134,7 @@ shapiro.test(pcf$bpca.soil)
 shapiro.test(pcf$b6.total)
 ```
 
-## Analysis
+## Analysis full data set
 
 ```{r}
 library(effsize)
@@ -190,7 +190,7 @@ wilcoxonR(x  = pcf$bpca.soil,
           ci = TRUE)
 ```
 
-
+## ACI B6 Total
 ```{r}
 wilcox.test(b6.total ~ live.dead, data = pcf, mu=0, alt="two.sided" , conf.int=TRUE, conf.level=0.95, pairded=FALSE, exact=TRUE, correct = TRUE)
 ```
@@ -202,9 +202,265 @@ wilcoxonR(x  = pcf$b6.total,
 ```
 
 
+## Analysis Jackknife
 
 ```{r}
+pcf
+```
+## Jackknife 1
+```{r}
+pcf1 = pcf[c(2:12),]
+pcf1
+```
+### Per Carbon
+```{r}
+wilcox.test(bpca.carbon ~ live.dead, data = pcf1, mu=0, alt="two.sided" , conf.int=TRUE, conf.level=0.95, pairded=FALSE, exact=TRUE, correct = TRUE)
+```
 
+### Per material
+```{r}
+wilcox.test(bpca.soil ~ live.dead, data = pcf1, mu=0, alt="two.sided" , conf.int=TRUE, conf.level=0.95, pairded=FALSE, exact=TRUE, correct = TRUE)
+```
+
+### ACI B6 Total
+```{r}
+wilcox.test(b6.total ~ live.dead, data = pcf1, mu=0, alt="two.sided" , conf.int=TRUE, conf.level=0.95, pairded=FALSE, exact=TRUE, correct = TRUE)
+```
+
+## Jackknife 2
+```{r}
+pcf2 = pcf[c(1,3:12),]
+pcf2
+```
+
+### Per Carbon
+```{r}
+wilcox.test(bpca.carbon ~ live.dead, data = pcf2, mu=0, alt="two.sided" , conf.int=TRUE, conf.level=0.95, pairded=FALSE, exact=TRUE, correct = TRUE)
+```
+
+### Per material
+```{r}
+wilcox.test(bpca.soil ~ live.dead, data = pcf2, mu=0, alt="two.sided" , conf.int=TRUE, conf.level=0.95, pairded=FALSE, exact=TRUE, correct = TRUE)
+```
+
+### ACI B6 Total
+```{r}
+wilcox.test(b6.total ~ live.dead, data = pcf2, mu=0, alt="two.sided" , conf.int=TRUE, conf.level=0.95, pairded=FALSE, exact=TRUE, correct = TRUE)
+```
+
+##Jackknife 3
+```{r}
+pcf3 = pcf[c(1:2,4:12),]
+pcf3
+```
+
+### Per Carbon
+```{r}
+wilcox.test(bpca.carbon ~ live.dead, data = pcf3, mu=0, alt="two.sided" , conf.int=TRUE, conf.level=0.95, pairded=FALSE, exact=TRUE, correct = TRUE)
+```
+
+### Per material
+```{r}
+wilcox.test(bpca.soil ~ live.dead, data = pcf3, mu=0, alt="two.sided" , conf.int=TRUE, conf.level=0.95, pairded=FALSE, exact=TRUE, correct = TRUE)
+```
+
+### ACI B6 Total
+```{r}
+wilcox.test(b6.total ~ live.dead, data = pcf3, mu=0, alt="two.sided" , conf.int=TRUE, conf.level=0.95, pairded=FALSE, exact=TRUE, correct = TRUE)
+```
+
+## Jackknife 4
+
+```{r}
+pcf4 = pcf[c(1:3,5:12),]
+pcf4
+```
+
+### Per Carbon
+```{r}
+wilcox.test(bpca.carbon ~ live.dead, data = pcf4, mu=0, alt="two.sided" , conf.int=TRUE, conf.level=0.95, pairded=FALSE, exact=TRUE, correct = TRUE)
+```
+
+### Per material
+```{r}
+wilcox.test(bpca.soil ~ live.dead, data = pcf4, mu=0, alt="two.sided" , conf.int=TRUE, conf.level=0.95, pairded=FALSE, exact=TRUE, correct = TRUE)
+```
+
+### ACI B6 Total
+```{r}
+wilcox.test(b6.total ~ live.dead, data = pcf4, mu=0, alt="two.sided" , conf.int=TRUE, conf.level=0.95, pairded=FALSE, exact=TRUE, correct = TRUE)
+```
+
+## Jackknife 5
+
+```{r}
+pcf5 = pcf[c(1:4,6:12),]
+pcf5
+```
+
+### Per Carbon
+```{r}
+wilcox.test(bpca.carbon ~ live.dead, data = pcf5, mu=0, alt="two.sided" , conf.int=TRUE, conf.level=0.95, pairded=FALSE, exact=TRUE, correct = TRUE)
+```
+
+### Per material
+```{r}
+wilcox.test(bpca.soil ~ live.dead, data = pcf5, mu=0, alt="two.sided" , conf.int=TRUE, conf.level=0.95, pairded=FALSE, exact=TRUE, correct = TRUE)
+```
+
+### ACI B6 Total
+```{r}
+wilcox.test(b6.total ~ live.dead, data = pcf5, mu=0, alt="two.sided" , conf.int=TRUE, conf.level=0.95, pairded=FALSE, exact=TRUE, correct = TRUE)
+```
+
+### Jackknife 6
+```{r}
+pcf6 = pcf[c(1:5,7:12),]
+pcf6
+```
+
+### Per Carbon
+```{r}
+wilcox.test(bpca.carbon ~ live.dead, data = pcf6, mu=0, alt="two.sided" , conf.int=TRUE, conf.level=0.95, pairded=FALSE, exact=TRUE, correct = TRUE)
+```
+
+### Per material
+```{r}
+wilcox.test(bpca.soil ~ live.dead, data = pcf6, mu=0, alt="two.sided" , conf.int=TRUE, conf.level=0.95, pairded=FALSE, exact=TRUE, correct = TRUE)
+```
+
+### ACI B6 Total
+```{r}
+wilcox.test(b6.total ~ live.dead, data = pcf6, mu=0, alt="two.sided" , conf.int=TRUE, conf.level=0.95, pairded=FALSE, exact=TRUE, correct = TRUE)
+```
+
+## Jackknife 7
+
+```{r}
+pcf7 = pcf[c(1:6,8:12),]
+pcf7
+```
+
+### Per Carbon
+```{r}
+wilcox.test(bpca.carbon ~ live.dead, data = pcf7, mu=0, alt="two.sided" , conf.int=TRUE, conf.level=0.95, pairded=FALSE, exact=TRUE, correct = TRUE)
+```
+
+### Per material
+```{r}
+wilcox.test(bpca.soil ~ live.dead, data = pcf7, mu=0, alt="two.sided" , conf.int=TRUE, conf.level=0.95, pairded=FALSE, exact=TRUE, correct = TRUE)
+```
+
+### ACI B6 Total
+```{r}
+wilcox.test(b6.total ~ live.dead, data = pcf7, mu=0, alt="two.sided" , conf.int=TRUE, conf.level=0.95, pairded=FALSE, exact=TRUE, correct = TRUE)
+```
+
+# Jackknife 8
+
+```{r}
+pcf8 = pcf[c(1:7,9:12),]
+pcf8
+```
+
+### Per Carbon
+```{r}
+wilcox.test(bpca.carbon ~ live.dead, data = pcf8, mu=0, alt="two.sided" , conf.int=TRUE, conf.level=0.95, pairded=FALSE, exact=TRUE, correct = TRUE)
 ```
 
 
+### Per material
+```{r}
+wilcox.test(bpca.soil ~ live.dead, data = pcf8, mu=0, alt="two.sided" , conf.int=TRUE, conf.level=0.95, pairded=FALSE, exact=TRUE, correct = TRUE)
+```
+
+### ACI B6 Total
+```{r}
+wilcox.test(b6.total ~ live.dead, data = pcf8, mu=0, alt="two.sided" , conf.int=TRUE, conf.level=0.95, pairded=FALSE, exact=TRUE, correct = TRUE)
+```
+
+##Jackknife 9
+```{r}
+pcf9 = pcf[c(1:8,10:12),]
+pcf9
+```
+
+### Per Carbon
+```{r}
+wilcox.test(bpca.carbon ~ live.dead, data = pcf9, mu=0, alt="two.sided" , conf.int=TRUE, conf.level=0.95, pairded=FALSE, exact=TRUE, correct = TRUE)
+```
+
+### Per material
+```{r}
+wilcox.test(bpca.soil ~ live.dead, data = pcf9, mu=0, alt="two.sided" , conf.int=TRUE, conf.level=0.95, pairded=FALSE, exact=TRUE, correct = TRUE)
+```
+
+### ACI B6 Total
+```{r}
+wilcox.test(b6.total ~ live.dead, data = pcf9, mu=0, alt="two.sided" , conf.int=TRUE, conf.level=0.95, pairded=FALSE, exact=TRUE, correct = TRUE)
+```
+
+## jackknife 10
+```{r}
+pcf10 = pcf[c(1:9,11:12),]
+pcf10
+```
+
+### Per Carbon
+```{r}
+wilcox.test(bpca.carbon ~ live.dead, data = pcf10, mu=0, alt="two.sided" , conf.int=TRUE, conf.level=0.95, pairded=FALSE, exact=TRUE, correct = TRUE)
+```
+
+### Per material
+```{r}
+wilcox.test(bpca.soil ~ live.dead, data = pcf10, mu=0, alt="two.sided" , conf.int=TRUE, conf.level=0.95, pairded=FALSE, exact=TRUE, correct = TRUE)
+```
+
+### ACI B6 Total
+```{r}
+wilcox.test(b6.total ~ live.dead, data = pcf10, mu=0, alt="two.sided" , conf.int=TRUE, conf.level=0.95, pairded=FALSE, exact=TRUE, correct = TRUE)
+```
+
+## Jackknife 11
+```{r}
+pcf11 = pcf[c(1:10,12),]
+pcf11
+```
+
+### Per Carbon
+```{r}
+wilcox.test(bpca.carbon ~ live.dead, data = pcf11, mu=0, alt="two.sided" , conf.int=TRUE, conf.level=0.95, pairded=FALSE, exact=TRUE, correct = TRUE)
+```
+
+### Per material
+```{r}
+wilcox.test(bpca.soil ~ live.dead, data = pcf11, mu=0, alt="two.sided" , conf.int=TRUE, conf.level=0.95, pairded=FALSE, exact=TRUE, correct = TRUE)
+```
+
+### ACI B6 Total
+```{r}
+wilcox.test(b6.total ~ live.dead, data = pcf11, mu=0, alt="two.sided" , conf.int=TRUE, conf.level=0.95, pairded=FALSE, exact=TRUE, correct = TRUE)
+```
+
+## Jackknife 12
+```{r}
+pcf12 = pcf[c(1:11),]
+pcf12
+```
+
+### Per Carbon
+
+```{r}
+wilcox.test(bpca.carbon ~ live.dead, data = pcf12, mu=0, alt="two.sided" , conf.int=TRUE, conf.level=0.95, pairded=FALSE, exact=TRUE, correct = TRUE)
+```
+
+### Per material
+
+```{r}
+wilcox.test(bpca.soil ~ live.dead, data = pcf12, mu=0, alt="two.sided" , conf.int=TRUE, conf.level=0.95, pairded=FALSE, exact=TRUE, correct = TRUE)
+```
+
+### ACI B6 Total
+```{r}
+wilcox.test(b6.total ~ live.dead, data = pcf12, mu=0, alt="two.sided" , conf.int=TRUE, conf.level=0.95, pairded=FALSE, exact=TRUE, correct = TRUE)
+```
