@@ -78,9 +78,14 @@ levels(pcf$live.dead)[levels(pcf$live.dead)=="live"] = "Scorched"
 
 # Graphs
 ```{r}
+jitter <- position_jitter(width = 0.1, height = 0)
+dodge <- position_dodge(width = 0.1)
+```
+
+```{r}
 carbon_plot = ggplot(pcf, aes(x = live.dead, y = bpca.carbon, color = live.dead)) +
   geom_boxplot() +
-  geom_jitter(aes(shape = bark.char)) +
+  geom_point(position = jitter, aes(shape = bark.char, size = 2)) +
   labs(title = "PyC on a per Carbon basis", x=(NULL), y= "g BPCA /\nkg Carbon") +
   scale_color_manual(values = c("tan", "darkgreen")) + 
   theme_bw() + 
@@ -98,7 +103,7 @@ carbon_plot
 ```{r}
 material_plot = ggplot(pcf, aes(x = live.dead, y = bpca.soil, color = live.dead)) +
   geom_boxplot() +
-  geom_jitter(aes(shape = bark.char)) +
+  geom_point(position = jitter, aes(shape = bark.char, size = 2)) +
   labs(title = "PyC on a per material basis", x=(NULL), y= "g BPCA /\nkg material") +
   scale_color_manual(values = c("tan", "darkgreen")) + 
   theme_bw() + 
@@ -112,10 +117,11 @@ material_plot
 ```
 
 
+
 ```{r}
 aci_plot = ggplot(pcf, aes(x = live.dead, y = b6.total, color = live.dead)) +
   geom_boxplot() +
-  geom_jitter(aes(shape = bark.char)) +
+  geom_point(position = jitter, aes(shape = bark.char, size = 2)) +
   labs(title = "ACI of PyC", x=(NULL), y= "g B6CA /\nTotal BPCA") +
   scale_color_manual(values = c("tan", "darkgreen")) + 
   theme_bw() + 
@@ -127,6 +133,60 @@ theme(panel.grid.major = element_blank())+
         axis.line = element_line(colour = "black"))
 
 aci_plot
+  
+```
+## Violin Plots
+```{r}
+carbon_plot_v = ggplot(pcf, aes(x = live.dead, y = bpca.carbon, color = live.dead)) +
+  geom_violin() +
+  geom_point(position = jitter, aes(shape = bark.char, size = 2)) +
+  labs(title = "PyC on a per Carbon basis", x=(NULL), y= "g BPCA /\nkg Carbon") +
+  scale_color_manual(values = c("tan", "darkgreen")) + 
+  theme_bw() + 
+  theme(legend.position = "none") +  
+theme(panel.grid.major = element_blank())+
+    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
+        axis.text.x = element_text(size = 10, color = "black"),
+        axis.text.y = element_text(size = 10, color = "black"),
+        axis.line = element_line(colour = "black"))
+
+carbon_plot_v
+  
+```
+
+```{r}
+material_plot_v = ggplot(pcf, aes(x = live.dead, y = bpca.soil, color = live.dead)) +
+  geom_violin() +
+  geom_point(position = jitter, aes(shape = bark.char, size = 2)) +
+  labs(title = "PyC on a per material basis", x=(NULL), y= "g BPCA /\nkg material") +
+  scale_color_manual(values = c("tan", "darkgreen")) + 
+  theme_bw() + 
+  theme(legend.position = "none") +  
+theme(panel.grid.major = element_blank())+
+    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
+        axis.text.x = element_text(size = 10, color = "black"),
+        axis.text.y = element_text(size = 10, color = "black"),
+        axis.line = element_line(colour = "black"))
+material_plot_v
+```
+
+
+
+```{r}
+aci_plot_v = ggplot(pcf, aes(x = live.dead, y = b6.total, color = live.dead)) +
+  geom_violin() +
+  geom_point(position = jitter, aes(shape = bark.char, size = 2)) +
+  labs(title = "ACI of PyC", x=(NULL), y= "g B6CA /\nTotal BPCA") +
+  scale_color_manual(values = c("tan", "darkgreen")) + 
+  theme_bw() + 
+  theme(legend.position = "none") +  
+theme(panel.grid.major = element_blank())+
+    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
+        axis.text.x = element_text(size = 10, color = "black"),
+        axis.text.y = element_text(size = 10, color = "black"),
+        axis.line = element_line(colour = "black"))
+
+aci_plot_v
   
 ```
 
@@ -149,7 +209,7 @@ legend
   
 ```
 
-```{r fig.height=5.25, fig.width=4}
+```{r fig.height=6, fig.width=4}
 legend = get_legend(legend)
 fig1 = cowplot::plot_grid(carbon_plot, material_plot, aci_plot, labels = c("A", "B", "C"), ncol = 1) 
 fig1
