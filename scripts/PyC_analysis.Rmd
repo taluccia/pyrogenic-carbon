@@ -733,7 +733,7 @@ dodge <- position_dodge(width = 0.1)
 ```{r}
 carbon_plot = ggplot(pcf, aes(x = live.dead, y = bpca.carbon, color = live.dead)) +
   geom_boxplot() +
-  geom_point(position = jitter, aes(shape = bark.char, size = 2)) +
+  geom_point(aes(shape = bark.char), size = 2, position = position_jitter(w = 0.15, h = 0, seed=10)) +
   labs(title = "PyC on a per Carbon basis", x=(NULL), y= "g BPCA /\nkg Carbon") +
   scale_color_manual(values = c("tan", "darkgreen")) + 
   theme_bw() + 
@@ -751,7 +751,7 @@ carbon_plot
 ```{r}
 material_plot = ggplot(pcf, aes(x = live.dead, y = bpca.soil, color = live.dead)) +
   geom_boxplot() +
-  geom_jitter(width = 0.25, aes(shape = bark.char, size = 1)) +
+  geom_point(aes(shape = bark.char), size = 2, position = position_jitter(w = 0.15, h = 0, seed=10)) +
   labs(title = "PyC on a per material basis", x=(NULL), y= "g BPCA /\nkg material") +
   scale_color_manual(values = c("tan", "darkgreen")) + 
   theme_bw() + 
@@ -765,8 +765,25 @@ material_plot
 ```
 
 ```{r}
+aci_plot = ggplot(pcf, aes(x = live.dead, y = b6.total, color = live.dead)) +
+  geom_boxplot() +
+  geom_point(aes(shape = bark.char), size = 2, position = position_jitter(w = 0.15, h = 0, seed=10)) +
+  labs(title = "ACI of PyC", x=(NULL), y= "g B6CA /\nTotal BPCA") +
+  scale_color_manual(values = c("tan", "darkgreen")) + 
+  theme_bw() + 
+  theme(legend.position = "none") +  
+theme(panel.grid.major = element_blank())+
+    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
+        axis.text.x = element_text(size = 10, color = "black"),
+        axis.text.y = element_text(size = 10, color = "black"),
+        axis.line = element_line(colour = "black"))
+
+aci_plot
+  
+```
+```{r}
 legend = ggplot(pcf, aes(x = live.dead, y = b6.total)) +
-  geom_jitter(aes(shape = bark.char, color = bark.char)) +
+  geom_jitter(aes(shape = bark.char, color = bark.char), size = 2) +
   labs(title = "ACI of PyC", x=(NULL), y= "g B6CA /\nTotal BPCA") +
   scale_color_manual(values = c("tan", "darkgreen")) + 
   theme_bw() + 
