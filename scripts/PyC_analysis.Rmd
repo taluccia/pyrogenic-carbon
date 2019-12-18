@@ -27,7 +27,7 @@ PCF samples were ground in a ball grinder on 6/21/18
 
 
 
-```{r warning=FALSE,message=FALSE,echo=FALSE,fig.height=3,fig.width=3}
+```{r warning=FALSE,message=FALSE}
 #Metadata
 #jh.number:	index number used for internal tracking
 #name:	sample name used during analysis
@@ -714,4 +714,85 @@ legend = get_legend(legend)
 ggsave("../figs/2018-10-11_BPCA.png", plot = grid2 , width = 6, height = 3.5, units = c("in"), dpi=600 )
 ```
 
+
+
+
+# Graphs
+
+```{r}
+levels(pcf$live.dead)[levels(pcf$live.dead)=="dead"] = "Charred"
+levels(pcf$live.dead)[levels(pcf$live.dead)=="live"] = "Scorched"
+
+```
+
+```{r}
+jitter <- position_jitter(width = 0.1, height = 0)
+dodge <- position_dodge(width = 0.1)
+```
+
+```{r}
+carbon_plot = ggplot(pcf, aes(x = live.dead, y = bpca.carbon, color = live.dead)) +
+  geom_boxplot() +
+  geom_point(position = jitter, aes(shape = bark.char, size = 2)) +
+  labs(title = "PyC on a per Carbon basis", x=(NULL), y= "g BPCA /\nkg Carbon") +
+  scale_color_manual(values = c("tan", "darkgreen")) + 
+  theme_bw() + 
+  theme(legend.position = "none") +  
+theme(panel.grid.major = element_blank())+
+    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
+        axis.text.x = element_text(size = 10, color = "black"),
+        axis.text.y = element_text(size = 10, color = "black"),
+        axis.line = element_line(colour = "black"))
+
+carbon_plot
+  
+```
+
+```{r}
+material_plot = ggplot(pcf, aes(x = live.dead, y = bpca.soil, color = live.dead)) +
+  geom_boxplot() +
+  geom_jitter(width = 0.25, aes(shape = bark.char, size = 1)) +
+  labs(title = "PyC on a per material basis", x=(NULL), y= "g BPCA /\nkg material") +
+  scale_color_manual(values = c("tan", "darkgreen")) + 
+  theme_bw() + 
+  theme(legend.position = "none") +  
+theme(panel.grid.major = element_blank())+
+    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
+        axis.text.x = element_text(size = 10, color = "black"),
+        axis.text.y = element_text(size = 10, color = "black"),
+        axis.line = element_line(colour = "black"))
+material_plot
+```
+
+```{r}
+legend = ggplot(pcf, aes(x = live.dead, y = b6.total)) +
+  geom_jitter(aes(shape = bark.char, color = bark.char)) +
+  labs(title = "ACI of PyC", x=(NULL), y= "g B6CA /\nTotal BPCA") +
+  scale_color_manual(values = c("tan", "darkgreen")) + 
+  theme_bw() + 
+  theme(legend.position = "bottom", 
+        legend.title = element_blank(),
+              legend.text = element_text(size = 10)) +  
+theme(panel.grid.major = element_blank())+
+    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
+        axis.text.x = element_text(size = 10, color = "black"),
+        axis.text.y = element_text(size = 10, color = "black"),
+        axis.line = element_line(colour = "black"))
+
+legend
+  
+```
+
+```{r fig.height=5.25, fig.width=4.75}
+legend = get_legend(legend)
+fig1 = cowplot::plot_grid(carbon_plot, material_plot, aci_plot, labels = c("A", "B", "C"), ncol = 1) 
+fig1
+```
+
+```{r fig.height=5.25, fig.width=4.75}
+( grid_final1 = cowplot::plot_grid(fig1, legend, ncol=1, rel_heights = c(1, .06))  )
+```
+```{r eval=FALSE, include=FALSE}
+ggsave("../figures/2019-12-17_PyC_live-dead.jpeg", plot = grid_final1, width = 6, height = 7, units = c("in"), dpi=600 )
+```
 **THE END**

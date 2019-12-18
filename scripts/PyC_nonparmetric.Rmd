@@ -192,7 +192,7 @@ aci_plot_v
 
 ```{r}
 legend = ggplot(pcf, aes(x = live.dead, y = b6.total)) +
-  geom_jitter(aes(shape = bark.char)) +
+  geom_jitter(aes(shape = bark.char, color = bark.char)) +
   labs(title = "ACI of PyC", x=(NULL), y= "g B6CA /\nTotal BPCA") +
   scale_color_manual(values = c("tan", "darkgreen")) + 
   theme_bw() + 
