@@ -72,6 +72,7 @@ pcf
 ```
 
 # One explanatory variable
+
 ## Model 1 - BPCA per Carbon
 ```{r}
 mod1 = glm(bpca.carbon ~ live.dead, data = pcf, family = gaussian)
@@ -102,14 +103,43 @@ summary(mod1)
 summary(lsmeans(mod1, pairwise ~ live.dead), type = "response", infer = TRUE, level = .90, adjust = "bon")
 ```
 
+### Graph
+
 ```{r}
-data.frame(summary(lsmeans(mod1, pairwise ~ live.dead),type = "response", infer = TRUE, level = .9, adjust = "bon"))
+(mod1_graph = data.frame(summary(lsmeans(mod1, pairwise ~ live.dead),type = "response")))
 ```
 
-### Model 1 - Tukey
 ```{r}
-lsmeans(mod1, pairwise ~ live.dead, adjust = "tukey")
-marginal = lsmeans(mod1, ~ live.dead)
+levels(mod1_graph$lsmeans.live.dead)[levels(mod1_graph$lsmeans.live.dead)=="dead"] = "Charred"
+levels(mod1_graph$lsmeans.live.dead)[levels(mod1_graph$lsmeans.live.dead)=="live"] = "Scorched"
+
+( mod1_graph1 = dplyr::select(mod1_graph, lsmeans.live.dead:lsmeans.asymp.UCL))
+
+
+
+names(mod1_graph1)[1:6] = c("live.dead", "response", "se", "df", "lcl", "ucl")
+mod1_graph1 = data.frame(mod1_graph1)
+
+
+```
+
+
+
+```{r}
+mod1_graph = ggplot(data = mod1_graph1, aes(x = live.dead, y = response, color = live.dead) ) + 
+   geom_errorbar(width = .2, lwd = .75, aes(ymin = lcl, ymax = ucl), position = position_dodge(width = .75)) + 
+geom_point(size = 3, position = position_dodge(width = .75)) + 
+  labs(x=(NULL), y= "g BPCA /\nkg C") +
+  scale_color_manual(values = c("tan", "darkgreen")) + 
+  theme_bw() + 
+  theme(legend.position = "none") +  
+theme(panel.grid.major = element_blank()) +
+    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
+        axis.text.x = element_text(size = 10, color = "black"),
+        axis.text.y = element_text(size = 10, color = "black"),
+        axis.line = element_line(colour = "black"))
+
+mod1_graph  
 ```
 
 
@@ -143,17 +173,47 @@ summary(mod2)
 summary(lsmeans(mod2, pairwise ~ live.dead), type = "response", infer = TRUE, level = .90, adjust = "bon")
 ```
 
+
+
+### Graph
 ```{r}
-data.frame(summary(lsmeans(mod2, pairwise ~ live.dead),type = "response", infer = TRUE, level = .9, adjust = "bon"))
+(mod2_graph = data.frame(summary(lsmeans(mod2, pairwise ~ live.dead),type = "response")))
 ```
 
-### Model 2 - Tukey
 ```{r}
-lsmeans(mod2, pairwise ~ live.dead, adjust = "tukey")
-marginal2 = lsmeans(mod2, ~ live.dead)
+levels(mod2_graph$lsmeans.live.dead)[levels(mod2_graph$lsmeans.live.dead)=="dead"] = "Charred"
+levels(mod2_graph$lsmeans.live.dead)[levels(mod2_graph$lsmeans.live.dead)=="live"] = "Scorched"
+
+( mod2_graph2 = dplyr::select(mod2_graph, lsmeans.live.dead:lsmeans.asymp.UCL))
+
+
+
+names(mod2_graph2)[1:6] = c("live.dead", "response", "se", "df", "lcl", "ucl")
+mod2_graph2 = data.frame(mod2_graph2)
 
 
 ```
+
+
+
+```{r}
+mod2_graph = ggplot(data = mod2_graph2, aes(x = live.dead, y = response, color = live.dead) ) + 
+   geom_errorbar(width = .2, lwd = .75, aes(ymin = lcl, ymax = ucl), position = position_dodge(width = .75)) + 
+geom_point(size = 3, position = position_dodge(width = .75)) + 
+  labs(x=(NULL), y= "g BPCA /\nkg material") +
+  scale_color_manual(values = c("tan", "darkgreen")) + 
+  theme_bw() + 
+  theme(legend.position = "none") +  
+theme(panel.grid.major = element_blank()) +
+    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
+        axis.text.x = element_text(size = 10, color = "black"),
+        axis.text.y = element_text(size = 10, color = "black"),
+        axis.line = element_line(colour = "black"))
+
+mod2_graph  
+```
+
+
 
 ## Model 3 - B6 total
 ```{r}
@@ -185,25 +245,75 @@ summary(mod3)
 summary(lsmeans(mod3, pairwise ~ live.dead),type = "response", infer = TRUE, level = .9, adjust = "bon")
 ```
 
+
+### Graph
 ```{r}
-data.frame(summary(lsmeans(mod3, pairwise ~ live.dead),type = "response", infer = TRUE, level = .9, adjust = "bon"))
+(mod3_graph = data.frame(summary(lsmeans(mod3, pairwise ~ live.dead),type = "response")))
 ```
 
-### Model 3 - Tukey
 ```{r}
-lsmeans(mod3, pairwise ~ live.dead, adjust = "tukey")
+levels(mod3_graph$lsmeans.live.dead)[levels(mod3_graph$lsmeans.live.dead)=="dead"] = "Charred"
+levels(mod3_graph$lsmeans.live.dead)[levels(mod3_graph$lsmeans.live.dead)=="live"] = "Scorched"
 
-marginal3 = lsmeans(mod3, ~ live.dead)
+( mod3_graph3 = dplyr::select(mod3_graph, lsmeans.live.dead:lsmeans.asymp.UCL))
+
+
+
+names(mod3_graph3)[1:6] = c("live.dead", "response", "se", "df", "lcl", "ucl")
+mod3_graph3 = data.frame(mod3_graph3)
+
+
+```
+
+
+
+```{r}
+mod3_graph = ggplot(data = mod3_graph3, aes(x = live.dead, y = response, color = live.dead) ) + 
+   geom_errorbar(width = .2, lwd = .75, aes(ymin = lcl, ymax = ucl), position = position_dodge(width = .75)) + 
+geom_point(size = 3, position = position_dodge(width = .75)) + 
+  labs(x=(NULL), y= "g B6CA /\nTotal BPCA") +
+  scale_color_manual(values = c("tan", "darkgreen")) + 
+  theme_bw() + 
+  theme(legend.position = "none") +  
+theme(panel.grid.major = element_blank()) +
+    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
+        axis.text.x = element_text(size = 10, color = "black"),
+        axis.text.y = element_text(size = 10, color = "black"),
+        axis.line = element_line(colour = "black"))
+
+mod3_graph  
+```
+
+## One Explanatory variable Figure
+
+```{r fig.height=5.25, fig.width=4.75}
+
+exp1_figure1 = cowplot::plot_grid(mod1_graph, mod2_graph, mod3_graph, labels = c("A", "B", "C"), ncol = 1) 
+exp1_figure1
+```
+
+```{r fig.height=5.25, fig.width=4.75}
+exp1_figure2 = exp1_figure1 + 
+  draw_label("*", x = .55, y = .95, size = 36, fontface = "bold") + 
+  draw_label("*", x = .55, y = .6, size = 36, fontface = "bold") 
+
+exp1_figure2
+```
+
+```{r eval=FALSE, include=FALSE}
+ggsave("../figures/2019-12-19_exp1_dead-live_analysis.jpeg", plot = exp1_figure2, width = 4.75, height = 5.25, units = c("in"), dpi=600 )
 ```
 
 # Two Explanatory variables
 
 ## Model 1 - BPCA per Carbon
+
 ```{r}
 fit1 = glm(bpca.carbon ~ live.dead + bark.char, data = pcf, family = gaussian)
 ```
 
 ### Residuals with DHARMa
+
 ```{r, include=FALSE}
 fit1.res = simulateResiduals(fittedModel = fit1, n = 500)
 fit1.res$scaledResiduals
@@ -971,5 +1081,19 @@ ggsave("../figures/2019-12-19_PyC_live-dead.jpeg", plot = grid_final2, width = 4
 ```
 ```{r eval=FALSE, include=FALSE}
 ggsave("../figures/2019-12-17_PyC_live-dead.jpeg", plot = grid_final3, width = 6, height = 7, units = c("in"), dpi=600 )
+```
+
+
+```{r fig.height=5.25, fig.width=4.75}
+legend2 = get_legend(legend_bottom)
+grid_sup = ggdraw(fig2) +
+  draw_plot(legend2, x =.65, y = .78, width = .3, height = .3) 
+
+grid_sup
+
+```
+
+```{r eval=FALSE, include=FALSE}
+ggsave("../figures/2019-12-19_PyC_live-dead_sup.jpeg", plot = grid_sup, width = 4.75, height = 5.25, units = c("in"), dpi=600 )
 ```
 **THE END**
