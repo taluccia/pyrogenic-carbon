@@ -103,10 +103,12 @@ summary(mod1)
 summary(lsmeans(mod1, pairwise ~ live.dead), type = "response", infer = TRUE, level = .90, adjust = "bon")
 ```
 
-### Graph
+### Data for Graph
 
 ```{r}
-(mod1_graph = data.frame(summary(lsmeans(mod1, pairwise ~ live.dead),type = "response")))
+mod1_graph = data.frame(summary(lsmeans(mod1, pairwise ~ live.dead),type = "response"))
+names(mod1_graph)[1:6] = c("live.dead", "response", "se", "df", "lcl", "ucl")
+mod1_graph
 ```
 
 ```{r}
@@ -123,7 +125,7 @@ mod1_graph1 = data.frame(mod1_graph1)
 
 ```
 
-
+### Graph
 
 ```{r}
 mod1_graph = ggplot(data = mod1_graph1, aes(x = live.dead, y = response, color = live.dead) ) + 
@@ -141,8 +143,31 @@ theme(panel.grid.major = element_blank()) +
 
 mod1_graph  
 ```
+geom_point(aes(shape = bark.char), size = 3, position = position_jitter(w = 0.15, h = 0, seed=10)) +
 
 
+### Graph with raw
+```{r}
+ ggplot() + 
+      geom_point(data = mod1_graph, aes(x = live.dead, y = response, color = live.dead), size = 3, position = position_dodge(width = .75)) +  
+      geom_errorbar(data = mod1_graph, width = .2, lwd = .75, aes(x = live.dead, y = response, ymin = lcl, ymax = ucl, color = live.dead), position = position_dodge(width = .75)) + 
+  scale_color_manual(values = c("tan", "darkgreen")) +
+ 
+    geom_point(data= pcf, aes(x = live.dead, y = bpca.carbon, color = live.dead, shape = bark.char), size = 3, position = position_jitter(w = 0.15, h = 0, seed=10)) +
+  scale_shape_manual(values = c(23, 24)) +
+  labs(x=(NULL), y= "g BPCA /\nkg C") +
+  scale_color_manual(values = c("tan", "darkgreen")) + 
+  scale_x_discrete(labels= c("Beetle-killed", "Fire-killed")) +
+  theme_bw() + 
+  theme(legend.position = "none") +  
+theme(panel.grid.major = element_blank()) +
+    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
+        axis.text.x = element_text(size = 10, color = "black"),
+        axis.text.y = element_text(size = 10, color = "black"),
+        axis.line = element_line(colour = "black"))
+
+
+```
 ## Model 2 - BPCA per Material
 ```{r}
 mod2 = glm(bpca.soil ~ live.dead, data = pcf, family = gaussian)
@@ -414,7 +439,7 @@ theme(panel.grid.major = element_blank())+
   
 ```
 
-# Raw Data Figures
+## Raw Data Figures
 ```{r fig.height=5.25, fig.width=4.75}
 
 grid2 = cowplot::plot_grid(plot1, plot2, plot3, labels = c("A", "B", "C"), ncol = 1) 
@@ -427,7 +452,7 @@ ggsave("../figs/2018-12-21_ch4_rawdatafig.jpeg", plot = grid2, width = 6, height
 ```{r eval=FALSE, include=FALSE}
 ggsave("../figs/2019-01-28_ch4_rawdatafig_science.jpeg", plot = grid2, width = 4.75, height = 5.25, units = c("in"), dpi=600 )
 ```
-# Other Figures
+## Other Figures
 
 ```{r}
 ggplot(pcf, aes(x=live.dead, y=bpca.carbon, color=bark.char)) +
@@ -489,7 +514,7 @@ For the live trees, you should really ignore the ACI of the wood because there's
 
 
 
-# Lauren's Figures 
+## Lauren's Figures 
 ```{r}
 legend = ggplot(pcf, aes(x=live.dead, y=bpca.soil, color=bark.char)) +
   theme_bw() + 
