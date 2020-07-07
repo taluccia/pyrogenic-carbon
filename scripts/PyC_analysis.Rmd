@@ -111,7 +111,7 @@ names(mod1_graph)[1:6] = c("live.dead", "response", "se", "df", "lcl", "ucl")
 mod1_graph
 ```
 
-```{r}
+```{r eval=FALSE, include=FALSE}
 levels(mod1_graph$lsmeans.live.dead)[levels(mod1_graph$lsmeans.live.dead)=="dead"] = "Charred"
 levels(mod1_graph$lsmeans.live.dead)[levels(mod1_graph$lsmeans.live.dead)=="live"] = "Scorched"
 
@@ -128,7 +128,7 @@ mod1_graph1 = data.frame(mod1_graph1)
 ### Graph
 
 ```{r}
-mod1_graph = ggplot(data = mod1_graph1, aes(x = live.dead, y = response, color = live.dead) ) + 
+mod1_plot = ggplot(data = mod1_graph, aes(x = live.dead, y = response, color = live.dead) ) + 
    geom_errorbar(width = .2, lwd = .75, aes(ymin = lcl, ymax = ucl), position = position_dodge(width = .75)) + 
 geom_point(size = 3, position = position_dodge(width = .75)) + 
   labs(x=(NULL), y= "g BPCA /\nkg C") +
@@ -141,17 +141,16 @@ theme(panel.grid.major = element_blank()) +
         axis.text.y = element_text(size = 10, color = "black"),
         axis.line = element_line(colour = "black"))
 
-mod1_graph  
+mod1_plot  
 ```
-geom_point(aes(shape = bark.char), size = 3, position = position_jitter(w = 0.15, h = 0, seed=10)) +
+
 
 
 ### Graph with raw
 ```{r}
- ggplot() + 
+plot1_raw = ggplot() + 
       geom_point(data = mod1_graph, aes(x = live.dead, y = response, color = live.dead), size = 3, position = position_dodge(width = .75)) +  
       geom_errorbar(data = mod1_graph, width = .2, lwd = .75, aes(x = live.dead, y = response, ymin = lcl, ymax = ucl, color = live.dead), position = position_dodge(width = .75)) + 
-  scale_color_manual(values = c("tan", "darkgreen")) +
  
     geom_point(data= pcf, aes(x = live.dead, y = bpca.carbon, color = live.dead, shape = bark.char), size = 3, position = position_jitter(w = 0.15, h = 0, seed=10)) +
   scale_shape_manual(values = c(23, 24)) +
@@ -166,7 +165,7 @@ theme(panel.grid.major = element_blank()) +
         axis.text.y = element_text(size = 10, color = "black"),
         axis.line = element_line(colour = "black"))
 
-
+plot1_raw
 ```
 ## Model 2 - BPCA per Material
 ```{r}
@@ -200,12 +199,14 @@ summary(lsmeans(mod2, pairwise ~ live.dead), type = "response", infer = TRUE, le
 
 
 
-### Graph
+### Data for Graph
 ```{r}
-(mod2_graph = data.frame(summary(lsmeans(mod2, pairwise ~ live.dead),type = "response")))
+mod2_graph = data.frame(summary(lsmeans(mod2, pairwise ~ live.dead),type = "response"))
+names(mod2_graph)[1:6] = c("live.dead", "response", "se", "df", "lcl", "ucl")
+mod2_graph
 ```
 
-```{r}
+```{r eval=FALSE, include=FALSE}
 levels(mod2_graph$lsmeans.live.dead)[levels(mod2_graph$lsmeans.live.dead)=="dead"] = "Charred"
 levels(mod2_graph$lsmeans.live.dead)[levels(mod2_graph$lsmeans.live.dead)=="live"] = "Scorched"
 
@@ -220,9 +221,9 @@ mod2_graph2 = data.frame(mod2_graph2)
 ```
 
 
-
+### Graph
 ```{r}
-mod2_graph = ggplot(data = mod2_graph2, aes(x = live.dead, y = response, color = live.dead) ) + 
+mod2_plot = ggplot(data = mod2_graph, aes(x = live.dead, y = response, color = live.dead) ) + 
    geom_errorbar(width = .2, lwd = .75, aes(ymin = lcl, ymax = ucl), position = position_dodge(width = .75)) + 
 geom_point(size = 3, position = position_dodge(width = .75)) + 
   labs(x=(NULL), y= "g BPCA /\nkg material") +
@@ -235,10 +236,33 @@ theme(panel.grid.major = element_blank()) +
         axis.text.y = element_text(size = 10, color = "black"),
         axis.line = element_line(colour = "black"))
 
-mod2_graph  
+mod2_plot  
 ```
 
+### Graph with raw
 
+
+```{r}
+plot2_raw = ggplot() + 
+      geom_point(data = mod2_graph, aes(x = live.dead, y = response, color = live.dead), size = 3, position = position_dodge(width = .75)) +  
+      geom_errorbar(data = mod2_graph, width = .2, lwd = .75, aes(x = live.dead, y = response, ymin = lcl, ymax = ucl, color = live.dead), position = position_dodge(width = .75)) + 
+  scale_color_manual(values = c("tan", "darkgreen")) +
+ 
+    geom_point(data= pcf, aes(x = live.dead, y = bpca.soil, color = live.dead, shape = bark.char), size = 3, position = position_jitter(w = 0.15, h = 0, seed=10)) +
+  scale_shape_manual(values = c(23, 24)) +
+  labs(x=(NULL), y= "g BPCA /\nkg material") +
+  scale_color_manual(values = c("tan", "darkgreen")) + 
+  scale_x_discrete(labels= c("Beetle-killed", "Fire-killed")) +
+  theme_bw() + 
+  theme(legend.position = "none") +  
+theme(panel.grid.major = element_blank()) +
+    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
+        axis.text.x = element_text(size = 10, color = "black"),
+        axis.text.y = element_text(size = 10, color = "black"),
+        axis.line = element_line(colour = "black"))
+
+plot2_raw
+```
 
 ## Model 3 - B6 total
 ```{r}
@@ -271,12 +295,15 @@ summary(lsmeans(mod3, pairwise ~ live.dead),type = "response", infer = TRUE, lev
 ```
 
 
-### Graph
+### Data for Graph
 ```{r}
-(mod3_graph = data.frame(summary(lsmeans(mod3, pairwise ~ live.dead),type = "response")))
+mod3_graph = data.frame(summary(lsmeans(mod3, pairwise ~ live.dead),type = "response"))
+
+names(mod3_graph)[1:6] = c("live.dead", "response", "se", "df", "lcl", "ucl")
+mod3_graph
 ```
 
-```{r}
+```{r eval=FALSE, include=FALSE}
 levels(mod3_graph$lsmeans.live.dead)[levels(mod3_graph$lsmeans.live.dead)=="dead"] = "Charred"
 levels(mod3_graph$lsmeans.live.dead)[levels(mod3_graph$lsmeans.live.dead)=="live"] = "Scorched"
 
@@ -291,9 +318,9 @@ mod3_graph3 = data.frame(mod3_graph3)
 ```
 
 
-
+### Graph 
 ```{r}
-mod3_graph = ggplot(data = mod3_graph3, aes(x = live.dead, y = response, color = live.dead) ) + 
+mod3_plot = ggplot(data = mod3_graph, aes(x = live.dead, y = response, color = live.dead) ) + 
    geom_errorbar(width = .2, lwd = .75, aes(ymin = lcl, ymax = ucl), position = position_dodge(width = .75)) + 
 geom_point(size = 3, position = position_dodge(width = .75)) + 
   labs(x=(NULL), y= "g B6CA /\nTotal BPCA") +
@@ -306,14 +333,39 @@ theme(panel.grid.major = element_blank()) +
         axis.text.y = element_text(size = 10, color = "black"),
         axis.line = element_line(colour = "black"))
 
-mod3_graph  
+mod3_plot  
 ```
 
-## One Explanatory variable Figure
+### Graph with raw
 
+```{r}
+plot3_raw = ggplot() + 
+      geom_point(data = mod3_graph, aes(x = live.dead, y = response, color = live.dead), size = 3, position = position_dodge(width = .75)) +  
+      geom_errorbar(data = mod3_graph, width = .2, lwd = .75, aes(x = live.dead, y = response, ymin = lcl, ymax = ucl, color = live.dead), position = position_dodge(width = .75)) + 
+  scale_color_manual(values = c("tan", "darkgreen")) +
+ 
+    geom_point(data= pcf, aes(x = live.dead, y = b6.total, color = live.dead, shape = bark.char), size = 3, position = position_jitter(w = 0.15, h = 0, seed=10)) +
+  scale_shape_manual(values = c(23, 24)) +
+  labs(x=(NULL), y= "g B6CA /\nTotal BPCA") +
+  scale_color_manual(values = c("tan", "darkgreen")) + 
+  scale_x_discrete(labels= c("Beetle-killed", "Fire-killed")) +
+  theme_bw() + 
+  theme(legend.position = "none") +  
+theme(panel.grid.major = element_blank()) +
+    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
+        axis.text.x = element_text(size = 10, color = "black"),
+        axis.text.y = element_text(size = 10, color = "black"),
+        axis.line = element_line(colour = "black"))
+
+plot3_raw
+```
+
+## Manuscript Figures
+
+### Without raw data
 ```{r fig.height=5.25, fig.width=4.75}
 
-exp1_figure1 = cowplot::plot_grid(mod1_graph, mod2_graph, mod3_graph, labels = c("A", "B", "C"), ncol = 1) 
+exp1_figure1 = cowplot::plot_grid(mod1_plot, mod2_plot, mod3_plot, labels = c("A", "B", "C"), ncol = 1) 
 exp1_figure1
 ```
 
@@ -326,203 +378,16 @@ exp1_figure2
 ```
 
 ```{r eval=FALSE, include=FALSE}
-ggsave("../figures/2019-12-19_exp1_dead-live_analysis.jpeg", plot = exp1_figure2, width = 4.75, height = 5.25, units = c("in"), dpi=600 )
+ggsave("../figures/2020-07-07_exp1_dead-live_analysis.jpeg", plot = exp1_figure2, width = 4.75, height = 5.25, units = c("in"), dpi=600 )
 ```
 
-
-# Graph Raw data
-```{r}
-head(pcf)
-```
+### With Raw data
 
 ```{r}
-levels(pcf$live.dead)[levels(pcf$live.dead)=="dead"] = "Charred"
-levels(pcf$live.dead)[levels(pcf$live.dead)=="live"] = "Scorched"
-
-```
-
-```{r}
-ggplot(pcf, aes(x = live.dead, y = bpca.carbon, color = live.dead)) +
-  geom_boxplot() +
-  geom_jitter(size=3) +
-  labs(title = "PyC on a per Carbon basis", x=(NULL), y= "g BPCA /\nkg Carbon") +
-  scale_color_manual(values = c("tan", "darkgreen")) + 
-  theme_bw() + 
-  theme(legend.position = "none") +  
-theme(panel.grid.major = element_blank())+
-    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
-        axis.text.x = element_text(size = 10, color = "black"),
-        axis.text.y = element_text(size = 10, color = "black"),
-        axis.line = element_line(colour = "black"))
-  
-```
-```{r}
-ggplot(pcf, aes(x = live.dead, y = bpca.soil, color = live.dead)) +
-  geom_boxplot() +
-  geom_jitter(size=3) +
-  labs(title = "PyC on a per material basis", x=(NULL), y= "g BPCA /\nkg material") +
-  scale_color_manual(values = c("tan", "darkgreen")) + 
-  theme_bw() + 
-  theme(legend.position = "none") +  
-theme(panel.grid.major = element_blank())+
-    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
-        axis.text.x = element_text(size = 10, color = "black"),
-        axis.text.y = element_text(size = 10, color = "black"),
-        axis.line = element_line(colour = "black"))
-  
-```
-
-```{r}
-ggplot(pcf, aes(x = live.dead, y = b6.total, color = live.dead)) +
-  geom_boxplot() +
-  geom_jitter(size=3) +
+legend_bottom = ggplot(pcf, aes(x = live.dead, y = b6.total)) +
+  geom_jitter(aes(shape = bark.char), size = 3) +
   labs(title = "ACI of PyC", x=(NULL), y= "g B6CA /\nTotal BPCA") +
-  scale_color_manual(values = c("tan", "darkgreen")) + 
-  theme_bw() + 
-  theme(legend.position = "none") +  
-theme(panel.grid.major = element_blank())+
-    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
-        axis.text.x = element_text(size = 10, color = "black"),
-        axis.text.y = element_text(size = 10, color = "black"),
-        axis.line = element_line(colour = "black"))
-  
-```
-
-```{r}
-plot1 = ggplot(pcf, aes(x = live.dead, y = bpca.carbon, color = live.dead)) +
-  geom_boxplot() +
-  geom_jitter(size=3) +
-  facet_wrap(~bark.char) +
-  labs(title = "PyC on a per Carbon basis", x=(NULL), y= "g BPCA /\nkg Carbon") +
-  scale_color_manual(values = c("tan", "darkgreen")) + 
-  theme_bw() + 
-  theme(legend.position = "none") +  
-theme(panel.grid.major = element_blank())+
-    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
-        axis.text.x = element_text(size = 10, color = "black"),
-        axis.text.y = element_text(size = 10, color = "black"),
-        axis.line = element_line(colour = "black"))
-  
-```
-
-```{r}
-plot2 = ggplot(pcf, aes(x = live.dead, y = bpca.soil, color = live.dead)) +
-  geom_boxplot() +
-  geom_jitter(size=3) +
-  facet_wrap(~bark.char) +
-  labs(title = "PyC on a per material basis", x=(NULL), y= "g BPCA /\nkg material") +
-  scale_color_manual(values = c("tan", "darkgreen")) + 
-  theme_bw() + 
-  theme(legend.position = "none") +  
-theme(panel.grid.major = element_blank())+
-    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
-        axis.text.x = element_text(size = 10, color = "black"),
-        axis.text.y = element_text(size = 10, color = "black"),
-        axis.line = element_line(colour = "black"))
-  
-```
-
-```{r}
-plot3 = ggplot(pcf, aes(x = live.dead, y = b6.total, color = live.dead)) +
-  geom_boxplot() +
-  geom_jitter(size=3) +
-  facet_wrap(~bark.char) +
-  labs(title = "ACI of PyC", x=(NULL), y= "g B6CA /\nTotal BPCA") +
-  scale_color_manual(values = c("tan", "darkgreen")) + 
-  theme_bw() + 
-  theme(legend.position = "none") +  
-theme(panel.grid.major = element_blank())+
-    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
-        axis.text.x = element_text(size = 10, color = "black"),
-        axis.text.y = element_text(size = 10, color = "black"),
-        axis.line = element_line(colour = "black"))
-  
-```
-
-## Raw Data Figures
-```{r fig.height=5.25, fig.width=4.75}
-
-grid2 = cowplot::plot_grid(plot1, plot2, plot3, labels = c("A", "B", "C"), ncol = 1) 
-grid2
-```
-```{r eval=FALSE, include=FALSE}
-ggsave("../figs/2018-12-21_ch4_rawdatafig.jpeg", plot = grid2, width = 6, height = 7, units = c("in"), dpi=600 )
-```
-
-```{r eval=FALSE, include=FALSE}
-ggsave("../figs/2019-01-28_ch4_rawdatafig_science.jpeg", plot = grid2, width = 4.75, height = 5.25, units = c("in"), dpi=600 )
-```
-
-# Graphs Charred v Scorched
-
-```{r}
-levels(pcf$live.dead)[levels(pcf$live.dead)=="dead"] = "Charred"
-levels(pcf$live.dead)[levels(pcf$live.dead)=="live"] = "Scorched"
-
-```
-
-```{r}
-jitter <- position_jitter(width = 0.1, height = 0)
-dodge <- position_dodge(width = 0.1)
-```
-
-```{r}
-carbon_plot1 = ggplot(pcf, aes(x = live.dead, y = bpca.carbon, color = live.dead)) +
-  geom_boxplot() +
-  geom_point(size = 3, position = position_jitter(w = 0.15, h = 0, seed=10)) +
-  labs(x=(NULL), y= "g BPCA /\nkg Carbon") +
-  scale_color_manual(values = c("tan", "darkgreen")) + 
-  theme_bw() + 
-  theme(legend.position = "none") +  
-theme(panel.grid.major = element_blank())+
-    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
-        axis.text.x = element_text(size = 10, color = "black"),
-        axis.text.y = element_text(size = 10, color = "black"),
-        axis.line = element_line(colour = "black"))
-
-carbon_plot1
-  
-```
-
-```{r}
-material_plot1 = ggplot(pcf, aes(x = live.dead, y = bpca.soil, color = live.dead)) +
-  geom_boxplot() +
-  geom_point(size = 3, position = position_jitter(w = 0.15, h = 0, seed=10)) +
-  labs(x=(NULL), y= "g BPCA /\nkg material") +
-  scale_color_manual(values = c("tan", "darkgreen")) + 
-  theme_bw() + 
-  theme(legend.position = "none") +  
-theme(panel.grid.major = element_blank())+
-    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
-        axis.text.x = element_text(size = 10, color = "black"),
-        axis.text.y = element_text(size = 10, color = "black"),
-        axis.line = element_line(colour = "black"))
-material_plot1
-```
-
-```{r}
-aci_plot1 = ggplot(pcf, aes(x = live.dead, y = b6.total, color = live.dead)) +
-  geom_boxplot(outlier.shape = NA) +
-  geom_point(aes(color = live.dead, fill = live.dead), size = 3, position = position_jitter(w = 0.15, h = 0, seed=10)) +
-  labs(x=(NULL), y= "g B6CA /\nTotal BPCA") +
-  scale_fill_manual(values = c("tan", "darkgreen")) +
-  scale_color_manual(values = c("tan", "darkgreen")) + 
-  theme_bw() + 
-  theme(legend.position = "none") +  
-theme(panel.grid.major = element_blank())+
-    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
-        axis.text.x = element_text(size = 10, color = "black"),
-        axis.text.y = element_text(size = 10, color = "black"),
-        axis.line = element_line(colour = "black"))
-
-aci_plot1
-  
-```
-```{r}
-legend_bottom1 = ggplot(pcf, aes(x = live.dead, y = b6.total)) +
-  geom_jitter(aes(shape = bark.char), size = 2) +
-  labs(title = "ACI of PyC", x=(NULL), y= "g B6CA /\nTotal BPCA") +
-  
+  scale_shape_manual(values = c(23, 24)) +
   theme_bw() + 
   theme(legend.position = "bottom", 
         legend.title = element_blank(),
@@ -534,64 +399,46 @@ theme(panel.grid.major = element_blank())+
         axis.text.y = element_text(size = 10, color = "black"),
         axis.line = element_line(colour = "black"))
 
-
+legend_bottom
   
-```
-```{r}
-legend_side1 = ggplot(pcf, aes(x = live.dead, y = b6.total)) +
-  geom_jitter(aes(shape = bark.char, color = bark.char), size = 2) +
-  labs(title = "ACI of PyC", x=(NULL), y= "g B6CA /\nTotal BPCA") +
-  scale_color_manual(values = c("tan", "darkgreen")) + 
-  theme_bw() + 
-  theme(legend.position = "right", 
-        legend.title = element_blank(),
-              legend.text = element_text(size = 10)) +  
-theme(panel.grid.major = element_blank())+
-    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
-        axis.text.x = element_text(size = 10, color = "black"),
-        axis.text.y = element_text(size = 10, color = "black"),
-        axis.line = element_line(colour = "black"))
-
-
-  
-```
-
-```{r fig.height=5.25, fig.width=4.75}
-
-fig1 = cowplot::plot_grid(carbon_plot1, material_plot1, aci_plot1, labels = c("A", "B", "C"), ncol = 1) 
-fig1
 ```
 
 
 
 ```{r fig.height=5.25, fig.width=4.75}
 
-grid_final1 = ggdraw(fig1) +
-  draw_label("*", x = .55, y = .94, size = 36, fontface = "bold") +
-  draw_label("*", x = .55, y = .61, size = 36, fontface = "bold")
+grid_fig2 = cowplot::plot_grid(plot1_raw, plot2_raw, plot3_raw, labels = c("A", "B", "C"), ncol = 1) 
+grid_fig2
+```
 
-grid_final1
+```{r fig.height=5.25, fig.width=4.75}
+figure2 = exp1_figure1 + 
+  draw_label("*", x = .55, y = .95, size = 36, fontface = "bold") + 
+  draw_label("*", x = .55, y = .6, size = 36, fontface = "bold") 
+
+exp1_figure2
+```
+
+
+
+```{r fig.height=5.25, fig.width=4.75}
+legend2 = get_legend(legend_bottom)
+grid_fig3 = ggdraw(grid_fig2) +
+  draw_plot(legend2, x =.65, y = .78, width = .3, height = .3) + 
+  draw_label("*", x = .55, y = .94, size = 36, fontface = "bold") + 
+  draw_label("*", x = .55, y = .6, size = 36, fontface = "bold") 
+
+grid_fig3
+
 ```
 
 ```{r eval=FALSE, include=FALSE}
-ggsave("../figures/2019-12-19_PyC_live-dead_only.jpeg", plot = grid_final1, width = 4.75, height = 5.25, units = c("in"), dpi=600 )
-```
- 
-
-
-
-# Graphs bark wood split
-
-```{r}
-levels(pcf$live.dead)[levels(pcf$live.dead)=="dead"] = "Charred"
-levels(pcf$live.dead)[levels(pcf$live.dead)=="live"] = "Scorched"
-
+ggsave("../figures/2020-07-07_PyC_live-dead_raw.jpeg", plot = grid_fig3, width = 4.75, height = 5.25, units = c("in"), dpi=600 )
 ```
 
-```{r}
-jitter <- position_jitter(width = 0.1, height = 0)
-dodge <- position_dodge(width = 0.1)
-```
+
+# Boxplot with raw data
+
 
 ```{r}
 carbon_plot = ggplot(pcf, aes(x = live.dead, y = bpca.carbon, color = live.dead)) +
@@ -645,43 +492,7 @@ theme(panel.grid.major = element_blank())+
 aci_plot
   
 ```
-```{r}
-legend_bottom = ggplot(pcf, aes(x = live.dead, y = b6.total)) +
-  geom_jitter(aes(shape = bark.char), size = 2) +
-  labs(title = "ACI of PyC", x=(NULL), y= "g B6CA /\nTotal BPCA") +
-  
-  theme_bw() + 
-  theme(legend.position = "bottom", 
-        legend.title = element_blank(),
-              legend.text = element_text(size = 9)) +  
-  theme(legend.background = element_rect(colour = 'black', fill = 'white', linetype='solid')) +
-theme(panel.grid.major = element_blank())+
-    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
-        axis.text.x = element_text(size = 10, color = "black"),
-        axis.text.y = element_text(size = 10, color = "black"),
-        axis.line = element_line(colour = "black"))
 
-
-  
-```
-```{r}
-legend_side = ggplot(pcf, aes(x = live.dead, y = b6.total)) +
-  geom_jitter(aes(shape = bark.char, color = bark.char), size = 2) +
-  labs(title = "ACI of PyC", x=(NULL), y= "g B6CA /\nTotal BPCA") +
-  scale_color_manual(values = c("tan", "darkgreen")) + 
-  theme_bw() + 
-  theme(legend.position = "right", 
-        legend.title = element_blank(),
-              legend.text = element_text(size = 10)) +  
-theme(panel.grid.major = element_blank())+
-    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
-        axis.text.x = element_text(size = 10, color = "black"),
-        axis.text.y = element_text(size = 10, color = "black"),
-        axis.line = element_line(colour = "black"))
-
-
-  
-```
 
 ```{r fig.height=5.25, fig.width=4.75}
 legend = get_legend(legend)
