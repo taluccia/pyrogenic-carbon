@@ -68,15 +68,86 @@ pcf=subset(bk,field.fire=="PCF")
 ```
 
 ```{r}
-pcf
+ord_class = c("fire", "beetle")
+pcf1 = pcf %>% 
+  mutate(kill_by = ifelse(live.dead=="dead", "beetle", "fire"))  %>% 
+  mutate(kill_by = factor(kill_by, levels = ord_class))
+pcf1
 ```
 
-# One explanatory variable
+# Analysis
 
+## With Linear Model (lm)
+```{r}
+fit1 = lm(bpca.carbon ~ kill_by, data = pcf1)
+```
+
+```{r}
+t.test(bpca.carbon ~ kill_by, data = pcf1)
+```
+
+```{r}
+# Get the fitted value for each observation
+pcf1$fit = fitted(fit1)
+# Get the residuals of the model
+pcf1$res = residuals(fit1)
+```
+
+```{r}
+qplot(x = fit, y = res, data = pcf1,
+main = "Residuals vs Fitted Values")
+```
+
+```{r}
+qplot(x = kill_by, y = res, data = pcf1,
+xlab = "Fire-killed v Beetle-killed group",
+ylab = "Residuals",
+main = "Residuals vs Mortality group")
+```
+```{r}
+qplot(x = factor(1), y = res, data = pcf1, geom = "boxplot")
+```
+
+```{r}
+qqnorm(pcf1$res, main = "Normal QQ Plot of Residuals")
+qqline(pcf1$res) # add reference line to the qq plot
+```
+
+```{r}
+plot(fit1, which = 1) # residual vs fitted values
+```
+
+```{r}
+plot(fit1, which = 2) # qqnorm plot of residuals
+```
+
+```{r}
+anova(fit1)
+summary(fit1)
+```
+```{r}
+# All the coefficients
+coef(fit1)
+```
+
+```{r}
+# All the confidence intervals for the coefficients
+confint(fit1)
+```
+
+
+```{r}
+( diff_fit1 = data.frame(coef(fit1),
+confint(fit1)) )
+```
+
+# GLM
 ## Model 1 - BPCA per Carbon
 ```{r}
 mod1 = glm(bpca.carbon ~ live.dead, data = pcf, family = gaussian)
 ```
+
+
 
 ### Residuals with DHARMa
 ```{r, include=FALSE}
