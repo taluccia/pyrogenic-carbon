@@ -53,7 +53,8 @@ library(DHARMa)
 library(GGally)
 library(MASS)
 library(cowplot)
-library(multcompView)
+library(grid)
+library(gtable)
 
 ```
 
@@ -75,42 +76,66 @@ pcf1 = pcf %>%
 pcf1
 ```
 
+# Data Visualization
+```{r}
+qplot(x = kill_by, y = bpca.carbon, data = pcf1, geom = "boxplot") +
+stat_summary(fun = mean, aes(shape = "mean"), geom = "point", color = "red", size = 3)
+```
+
+```{r}
+qplot(x = kill_by, y = bpca.soil, data = pcf1, geom = "boxplot") +
+stat_summary(fun = mean, aes(shape = "mean"), geom = "point", color = "red", size = 3)
+```
+```{r}
+qplot(x = kill_by, y = b6.total, data = pcf1, geom = "boxplot") +
+stat_summary(fun = mean, aes(shape = "mean"), geom = "point", color = "red", size = 3)
+```
+
 # Analysis
 
 ## With Linear Model (lm)
+### BPCA carbon
+#### Summary data
+```{r}
+( sumdat1 = summarise( group_by(pcf1, "Mortality agent" = kill_by),
+n = n(),
+Mean = mean(bpca.carbon),
+SD = sd(bpca.carbon),
+Median = median(bpca.carbon),
+Minimum = min(bpca.carbon),
+Maximum = max(bpca.carbon) ) )
+```
+#### Model
 ```{r}
 fit1 = lm(bpca.carbon ~ kill_by, data = pcf1)
 ```
 
-```{r}
-t.test(bpca.carbon ~ kill_by, data = pcf1)
-```
-
+#### Residuals
 ```{r}
 # Get the fitted value for each observation
-pcf1$fit = fitted(fit1)
+pcf1$fit1 = fitted(fit1)
 # Get the residuals of the model
-pcf1$res = residuals(fit1)
+pcf1$res1 = residuals(fit1)
 ```
 
 ```{r}
-qplot(x = fit, y = res, data = pcf1,
+qplot(x = fit1, y = res1, data = pcf1,
 main = "Residuals vs Fitted Values")
 ```
 
 ```{r}
-qplot(x = kill_by, y = res, data = pcf1,
+qplot(x = kill_by, y = res1, data = pcf1,
 xlab = "Fire-killed v Beetle-killed group",
 ylab = "Residuals",
 main = "Residuals vs Mortality group")
 ```
 ```{r}
-qplot(x = factor(1), y = res, data = pcf1, geom = "boxplot")
+qplot(x = factor(1), y = res1, data = pcf1, geom = "boxplot")
 ```
 
 ```{r}
-qqnorm(pcf1$res, main = "Normal QQ Plot of Residuals")
-qqline(pcf1$res) # add reference line to the qq plot
+qqnorm(pcf1$res1, main = "Normal QQ Plot of Residuals")
+qqline(pcf1$res1) # add reference line to the qq plot
 ```
 
 ```{r}
@@ -121,8 +146,8 @@ plot(fit1, which = 1) # residual vs fitted values
 plot(fit1, which = 2) # qqnorm plot of residuals
 ```
 
+#### Summary
 ```{r}
-anova(fit1)
 summary(fit1)
 ```
 ```{r}
@@ -135,10 +160,513 @@ coef(fit1)
 confint(fit1)
 ```
 
+#### t-test
+```{r}
+( respunequal = t.test(bpca.carbon ~ kill_by, data = pcf1) )
+```
+
+##### Table
+"g BPCA /\nkg material"
+```{r}
+# Write out the results from the two-sample t-test with unequal variances
+# A title for the test
+titleres = as.character(expression(bold("Welch"~t-test*~"for"~a~difference*~"in"~means)))
+# This is the t stat with df and p-value
+ttestres1 = as.character(expression(t[6.5]==-4.7*","~italic(p)==0.003))
+# The estimated difference in group means (I calculated from the test results)
+diff1 = as.character(expression(Delta==-21.8~g~BPCA~kg~C^-1))
+# The 95% CI of the difference
+ci1 = as.character(expression(95*"%"~CI*":"~-33.0~to~-10.6))
+# Put these into a single column of a data.frame
+d1 = data.frame(col = rbind(ttestres1, diff1, ci1) )
+```
+
+```{r}
+t1 = tableGrob(d1, rows = NULL, cols = NULL,
+theme = ttheme_default(core = list(bg_params = list(fill = "white"),
+fg_params = list(parse = TRUE),
+padding = unit(c(2.5, 2.5), "mm"))))
+```
+
+```{r}
+t1 = gtable_add_grob(t1, grobs = rectGrob(gp = gpar(fill = NA, lwd = NA)),
+t = 1, b = nrow(t1), r = ncol(t1), l = 1)
+```
+
 
 ```{r}
 ( diff_fit1 = data.frame(coef(fit1),
 confint(fit1)) )
+```
+```{r}
+# Rename column names
+names(diff_fit1) = c("Estimate", "Lower", "Upper")
+diff_fit1
+```
+```{r}
+rownames(diff_fit1)
+```
+
+
+```{r}
+( diff_fit1$kill_by = factor(rownames(diff_fit1),
+levels = c("(Intercept)",   "kill_bybeetle"),
+labels = c("fire", "beetle") ) )
+```
+
+#### Graph
+
+```{r}
+ggplot() + 
+      geom_point(data = diff_fit1, aes(x = kill_by, y = Estimate, color = kill_by), size = 3, position = position_dodge(width = .75)) +  
+      geom_errorbar(data = diff_fit1, width = .2, lwd = .75, aes(x = kill_by, y = Estimate, ymin = Lower, ymax = Upper, color = kill_by), position = position_dodge(width = .75)) + 
+ 
+    geom_point(data= pcf1, aes(x = kill_by, y = bpca.carbon, color = kill_by, shape = bark.char), size = 3, position = position_jitter(w = 0.15, h = 0, seed=10)) +
+  scale_shape_manual(values = c(23, 24)) +
+  labs(x=(NULL), y= "g BPCA /\nkg C") +
+  scale_color_manual(values = c("darkgreen", "tan")) + 
+  
+scale_x_discrete(labels= c("Fire-killed", "Beetle-killed")) +
+  theme_bw() + 
+  theme(legend.position = "none") +  
+theme(panel.grid.major = element_blank()) +
+    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
+        axis.text.x = element_text(size = 10, color = "black"),
+        axis.text.y = element_text(size = 10, color = "black"),
+        axis.line = element_line(colour = "black"))
+
+```
+#### Boxplot
+```{r}
+g1 = ggplot(pcf1, aes(x = kill_by, y = bpca.carbon, color=kill_by) ) + # define plot axes
+  geom_boxplot(outlier.shape = NA) + # Add boxplots for each group
+  geom_point(aes(color = kill_by, shape = bark.char), size = 3, position = position_jitter(w = 0.15, h = 0, seed=10)) +
+stat_summary(fun = mean, geom= "point", size = 4) + # Add means to the plot
+  scale_shape_manual(values = c(23, 24)) +
+  labs(x=(NULL), y= "g BPCA /\nkg C") +
+  
+  scale_color_manual(values = c("darkgreen", "tan")) +
+  scale_x_discrete(labels= c("Fire-killed", "Beetle-killed")) +
+  theme_bw() + 
+  theme(legend.position = "none") +  
+theme(panel.grid.major = element_blank()) +
+    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
+        axis.text.x = element_text(size = 10, color = "black"),
+        axis.text.y = element_text(size = 10, color = "black"),
+        axis.line = element_line(colour = "black"))
+
+
+g1
+```
+
+### BPCA Mass
+#### Summary data
+```{r}
+( sumdat2 = summarise( group_by(pcf1, "Mortality agent" = kill_by),
+n = n(),
+Mean = mean(bpca.soil),
+SD = sd(bpca.soil),
+Median = median(bpca.soil),
+Minimum = min(bpca.soil),
+Maximum = max(bpca.soil) ) )
+```
+#### Model
+```{r}
+fit2 = lm(bpca.soil ~ kill_by, data = pcf1)
+```
+```{r}
+head(pcf1)
+```
+
+#### Residuals
+```{r}
+# Get the fitted value for each observation
+pcf1$fit2 = fitted(fit2)
+# Get the residuals of the model
+pcf1$res2 = residuals(fit2)
+```
+
+```{r}
+qplot(x = fit2, y = res2, data = pcf1,
+main = "Residuals vs Fitted Values")
+```
+
+```{r}
+qplot(x = kill_by, y = res2, data = pcf1,
+xlab = "Fire-killed v Beetle-killed group",
+ylab = "Residuals",
+main = "Residuals vs Mortality group")
+```
+```{r}
+qplot(x = factor(1), y = res2, data = pcf1, geom = "boxplot")
+```
+
+```{r}
+qqnorm(pcf1$res2, main = "Normal QQ Plot of Residuals")
+qqline(pcf1$res2) # add reference line to the qq plot
+```
+
+```{r}
+plot(fit2, which = 1) # residual vs fitted values
+```
+
+```{r}
+plot(fit2, which = 2) # qqnorm plot of residuals
+```
+
+#### Summary
+```{r}
+summary(fit2)
+```
+```{r}
+# All the coefficients
+coef(fit2)
+```
+
+```{r}
+# All the confidence intervals for the coefficients
+confint(fit2)
+```
+
+#### t-test
+```{r}
+( fit2_respunequal = t.test(bpca.soil ~ kill_by, data = pcf1) )
+```
+
+##### Table
+"g BPCA /\nkg material"
+```{r}
+# Write out the results from the two-sample t-test with unequal variances
+# A title for the test
+titleres = as.character(expression(bold("Welch"~t-test*~"for"~a~difference*~"in"~means)))
+# This is the t stat with df and p-value
+ttestres2 = as.character(expression(t[5.8]==-4.2*","~italic(p)==0.006))
+# The estimated difference in group means (I calculated from the test results)
+diff2 = as.character(expression(Delta==-15.0~g~BPCA~kg~material^-1))
+# The 95% CI of the difference
+ci2 = as.character(expression(95*"%"~CI*":"~-23.8~to~-6.2))
+# Put these into a single column of a data.frame
+d2 = data.frame(col = rbind(ttestres2, diff2, ci2) )
+```
+
+```{r}
+t2 = tableGrob(d2, rows = NULL, cols = NULL,
+theme = ttheme_default(core = list(bg_params = list(fill = "white"),
+fg_params = list(parse = TRUE),
+padding = unit(c(2.5, 2.5), "mm"))))
+```
+
+```{r}
+t2 = gtable_add_grob(t2, grobs = rectGrob(gp = gpar(fill = NA, lwd = NA)),
+t = 1, b = nrow(t2), r = ncol(t2), l = 1)
+```
+
+#### Model estimates
+```{r}
+( diff_fit2 = data.frame(coef(fit2),
+confint(fit2)) )
+```
+```{r}
+# Rename column names
+names(diff_fit2) = c("Estimate", "Lower", "Upper")
+diff_fit2
+```
+```{r}
+rownames(diff_fit2)
+```
+
+
+```{r}
+( diff_fit2$kill_by = factor(rownames(diff_fit2),
+levels = c("(Intercept)",   "kill_bybeetle"),
+labels = c("fire", "beetle") ) )
+```
+
+#### Graph
+
+```{r}
+ggplot() + 
+      geom_point(data = diff_fit2, aes(x = kill_by, y = Estimate, color = kill_by), size = 3, position = position_dodge(width = .75)) +  
+      geom_errorbar(data = diff_fit2, width = .2, lwd = .75, aes(x = kill_by, y = Estimate, ymin = Lower, ymax = Upper, color = kill_by), position = position_dodge(width = .75)) + 
+ 
+    geom_point(data= pcf1, aes(x = kill_by, y = bpca.soil, color = kill_by, shape = bark.char), size = 3, position = position_jitter(w = 0.15, h = 0, seed=10)) +
+  scale_shape_manual(values = c(23, 24)) +
+  labs(x=(NULL), y= "g BPCA /\nkg material") +
+  scale_color_manual(values = c("darkgreen", "tan")) + 
+  
+scale_x_discrete(labels= c("Fire-killed", "Beetle-killed")) +
+  theme_bw() + 
+  theme(legend.position = "none") +  
+theme(panel.grid.major = element_blank()) +
+    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
+        axis.text.x = element_text(size = 10, color = "black"),
+        axis.text.y = element_text(size = 10, color = "black"),
+        axis.line = element_line(colour = "black"))
+
+```
+#### Boxplot
+```{r}
+g2 = ggplot(pcf1, aes(x = kill_by, y = bpca.soil, color=kill_by) ) + # define plot axes
+  geom_boxplot(outlier.shape = NA) + # Add boxplots for each group
+  geom_point(aes(color = kill_by, shape = bark.char), size = 3, position = position_jitter(w = 0.15, h = 0, seed=10)) +
+stat_summary(fun = mean, geom= "point", size = 4) + # Add means to the plot
+  scale_shape_manual(values = c(23, 24)) +
+  labs(x=(NULL), y= "g BPCA /\nkg material") +
+  
+  scale_color_manual(values = c("darkgreen", "tan")) +
+  scale_x_discrete(labels= c("Fire-killed", "Beetle-killed")) +
+  theme_bw() + 
+  theme(legend.position = "none") +  
+theme(panel.grid.major = element_blank()) +
+    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
+        axis.text.x = element_text(size = 10, color = "black"),
+        axis.text.y = element_text(size = 10, color = "black"),
+        axis.line = element_line(colour = "black"))
+
+
+g2
+```
+
+### B6CA Total
+#### Summary data
+```{r}
+( sumdat3 = summarise( group_by(pcf1, "Mortality agent" = kill_by),
+n = n(),
+Mean = mean(b6.total),
+SD = sd(b6.total),
+Median = median(b6.total),
+Minimum = min(b6.total),
+Maximum = max(b6.total) ) )
+```
+#### Model
+```{r}
+fit3 = lm(b6.total ~ kill_by, data = pcf1)
+```
+
+#### Residuals
+```{r}
+# Get the fitted value for each observation
+pcf1$fit3 = fitted(fit3)
+# Get the residuals of the model
+pcf1$res3 = residuals(fit3)
+```
+
+```{r}
+qplot(x = fit3, y = res3, data = pcf1,
+main = "Residuals vs Fitted Values")
+```
+
+```{r}
+qplot(x = kill_by, y = res3, data = pcf1,
+xlab = "Fire-killed v Beetle-killed group",
+ylab = "Residuals",
+main = "Residuals vs Mortality group")
+```
+```{r}
+qplot(x = factor(1), y = res3, data = pcf1, geom = "boxplot")
+```
+
+```{r}
+qqnorm(pcf1$res3, main = "Normal QQ Plot of Residuals")
+qqline(pcf1$res3) # add reference line to the qq plot
+```
+
+```{r}
+plot(fit3, which = 1) # residual vs fitted values
+```
+
+```{r}
+plot(fit3, which = 2) # qqnorm plot of residuals
+```
+
+#### Summary
+```{r}
+summary(fit3)
+```
+```{r}
+# All the coefficients
+coef(fit3)
+```
+
+```{r}
+# All the confidence intervals for the coefficients
+confint(fit3)
+```
+
+#### t-test
+```{r}
+( respunequal = t.test(b6.total ~ kill_by, data = pcf1) )
+```
+
+
+##### Table
+g B6CA /\nTotal BPCA
+```{r}
+# Write out the results from the two-sample t-test with unequal variances
+# A title for the test
+titleres = as.character(expression(bold("Welch"~t-test*~"for"~a~difference*~"in"~means)))
+# This is the t stat with df and p-value
+ttestres3 = as.character(expression(t[5.09]==0.18*","~italic(p)==0.86))
+# The estimated difference in group means (I calculated from the test results)
+diff3 = as.character(expression(Delta==0.012~g~B6CA~Total~BPCA^-1))
+# The 95% CI of the difference
+ci3 = as.character(expression(95*"%"~CI*":"~-0.15~to~0.17))
+# Put these into a single column of a data.frame
+d3 = data.frame(col = rbind(ttestres3, diff3, ci3) )
+```
+
+```{r}
+t3 = tableGrob(d3, rows = NULL, cols = NULL,
+theme = ttheme_default(core = list(bg_params = list(fill = "white"),
+fg_params = list(parse = TRUE),
+padding = unit(c(2.5, 2.5), "mm"))))
+```
+
+```{r}
+t3 = gtable_add_grob(t3, grobs = rectGrob(gp = gpar(fill = NA, lwd = NA)),
+t = 1, b = nrow(t3), r = ncol(t3), l = 1)
+```
+
+#### Model estimates
+
+```{r}
+( diff_fit3 = data.frame(coef(fit3),
+confint(fit3)) )
+```
+
+```{r}
+# Rename column names
+names(diff_fit3) = c("Estimate", "Lower", "Upper")
+diff_fit3
+```
+```{r}
+rownames(diff_fit3)
+```
+
+
+```{r}
+( diff_fit3$kill_by = factor(rownames(diff_fit3),
+levels = c("(Intercept)",   "kill_bybeetle"),
+labels = c("fire", "beetle") ) )
+```
+
+#### Graph
+
+```{r}
+ggplot() + 
+      geom_point(data = diff_fit3, aes(x = kill_by, y = Estimate, color = kill_by), size = 3, position = position_dodge(width = .75)) +  
+      geom_errorbar(data = diff_fit3, width = .2, lwd = .75, aes(x = kill_by, y = Estimate, ymin = Lower, ymax = Upper, color = kill_by), position = position_dodge(width = .75)) + 
+ 
+    geom_point(data= pcf1, aes(x = kill_by, y = b6.total, color = kill_by, shape = bark.char), size = 3, position = position_jitter(w = 0.15, h = 0, seed=10)) +
+  scale_shape_manual(values = c(23, 24)) +
+  labs(x=(NULL), y= "g B6CA /\nTotal BPCA") +
+  scale_color_manual(values = c("darkgreen", "tan")) + 
+  
+scale_x_discrete(labels= c("Fire-killed", "Beetle-killed")) +
+  theme_bw() + 
+  theme(legend.position = "none") +  
+theme(panel.grid.major = element_blank()) +
+    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
+        axis.text.x = element_text(size = 10, color = "black"),
+        axis.text.y = element_text(size = 10, color = "black"),
+        axis.line = element_line(colour = "black"))
+
+```
+#### Boxplot
+```{r}
+g3 = ggplot(pcf1, aes(x = kill_by, y = b6.total, color=kill_by) ) + # define plot axes
+  geom_boxplot(outlier.shape = NA) + # Add boxplots for each group
+  geom_point(aes(color = kill_by, shape = bark.char), size = 3, position = position_jitter(w = 0.15, h = 0, seed=10)) +
+stat_summary(fun = mean, geom= "point", size = 4) + # Add means to the plot
+  scale_shape_manual(values = c(23, 24)) +
+  labs(x=(NULL), y= "g B6CA /\nTotal BPCA") +
+  
+  scale_color_manual(values = c("darkgreen", "tan")) +
+  
+scale_x_discrete(labels= c("Fire-killed", "Beetle-killed")) +
+  theme_bw() + 
+  theme(legend.position = "none") +  
+theme(panel.grid.major = element_blank()) +
+    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
+        axis.text.x = element_text(size = 10, color = "black"),
+        axis.text.y = element_text(size = 10, color = "black"),
+        axis.line = element_line(colour = "black"))
+
+
+g3
+```
+
+## Manuscript figure
+
+### Legend
+
+```{r}
+legend_bottom = ggplot(pcf, aes(x = live.dead, y = b6.total)) +
+  geom_jitter(aes(shape = bark.char), size = 3) +
+  labs(title = "ACI of PyC", x=(NULL), y= "g B6CA /\nTotal BPCA") +
+  scale_shape_manual(values = c(23, 24)) +
+  theme_bw() + 
+  theme(legend.position = "bottom", 
+        legend.title = element_blank(),
+              legend.text = element_text(size = 9)) +  
+  theme(legend.background = element_rect(colour = 'black', fill = 'white', linetype='solid')) +
+theme(panel.grid.major = element_blank())+
+    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
+        axis.text.x = element_text(size = 10, color = "black"),
+        axis.text.y = element_text(size = 10, color = "black"),
+        axis.line = element_line(colour = "black"))
+
+legend_bottom
+  
+```
+
+```{r}
+legend_b = get_legend(legend_bottom)
+```
+
+
+### Gridded boxplots
+
+```{r fig.height=7, fig.width=6}
+
+p1 = cowplot::plot_grid(g1, g2, g3, labels = c("A", "B", "C"), ncol = 1) 
+p1
+```
+
+### Gridded with t-test data
+
+```{r fig.height=7, fig.width=6}
+p2 = p1 + 
+  draw_grob(t1,x =.16, y = .80, width = .25, height = .25, scale=.5) +
+  draw_grob(t2,x =.185, y = .465, width = .25, height = .25, scale=.5) +
+  draw_grob(t3,x =.653, y = .133, width = .25, height = .25, scale=.5)
+
+p2
+```
+
+### Gridded with t-test data leg bot
+```{r fig.height=7, fig.width=6}
+
+
+p3 = plot_grid(p2, legend_b, ncol = 1, rel_heights = c(1, .1))
+
+p3
+```
+
+### Gridded with t-test data
+
+```{r fig.height=7, fig.width=6}
+p4 = p1 + 
+  draw_plot(legend_b, x =.70, y = .59, width = .3, height = .3) + 
+  draw_grob(t1,x =.16, y = .80, width = .25, height = .25, scale=.5) +
+  draw_grob(t2,x =.185, y = .465, width = .25, height = .25, scale=.5) +
+  draw_grob(t3,x =.653, y = .135, width = .25, height = .25, scale=.5)
+
+p4
+```
+
+```{r eval=FALSE, include=FALSE}
+ggsave("../figures/2020-07-09_PyC_live-dead_t-test.jpeg", plot = p4, width = 6, height = 7, units = c("in"), dpi=600 )
 ```
 
 # GLM
