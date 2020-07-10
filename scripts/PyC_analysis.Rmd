@@ -23,29 +23,32 @@ Samples were dried O/N in oven at 50C on 6/20/18
 PCF samples were ground in a ball grinder on 6/21/18
 - NOTE: the scorched bark from Tree 4 and Tree 5 (live @ time of fire) still contained a good bit of sap residue. Ball grinding resulted in a tacky mashed up thing. Transfer to scin vial and dry @ 50C for an additional 3 days. Still seemed tacky and heterogeneous. Flash froze in liquid nitrogen and ground in mortar and pestle to a fine powder. 
 
+***
 
 
+#Metadata
 
+* jh.number:	index number used for internal tracking
+* name:	sample name used during analysis
+* field.fire:	was the sample collected from the pole creek fire (PCF) or from the trees anna burned in the lab (lab)
+* tree:	individual tree number combined with the pcf/lab designation
+* base:	two of the samples anna burned in the lab were designated as 'base' - I'm not exactly sure what that means
+* live.dead:	was the tree alive or dead at the time of the fire / burning
+* bark.char:	was the sample from the bark or exposed char/wood under burned bark
+* bpca.carbon:	g total bpca / kg carbon
+* bpca.soil:	g total bpca / kg material
+* b6.total:	b6ca:total bpca ratio
+
+***
+
+# Packages
 
 ```{r warning=FALSE,message=FALSE}
-#Metadata
-#jh.number:	index number used for internal tracking
-#name:	sample name used during analysis
-#field.fire:	was the sample collected from the pole creek fire (PCF) or from the trees anna burned in the lab (lab)
-#tree:	individual tree number combined with the pcf/lab designation
-#base:	two of the samples anna burned in the lab were designated as 'base' - I'm not exactly sure what that means
-#live.dead:	was the tree alive or dead at the time of the fire / burning
-#bark.char:	was the sample from the bark or exposed char/wood under burned bark
-#bpca.carbon:	g total bpca / kg carbon
-#bpca.soil:	g total bpca / kg soil
-#b6.total:	b6ca:total bpca ratio
-
 library(ggplot2)
 library(dplyr)
 library(tidyr)
 library(gridExtra)
 library(lme4)
-
 library(lsmeans)
 library(statmod)
 library(car)
@@ -55,28 +58,30 @@ library(MASS)
 library(cowplot)
 library(grid)
 library(gtable)
-
 ```
 
+# Data
 ```{r}
-#import data
 bk=read.csv("../data/beetle_kill.csv", header=TRUE,sep=",",na.strings=c("", "NA"))
 ```
 
+## Pole Creak data
 ```{r}
-#separate out the polecreek fire data
 pcf=subset(bk,field.fire=="PCF")
 ```
 
-```{r}
+Add column for beetle-killed and fire-killed category
 ord_class = c("fire", "beetle")
-pcf1 = pcf %>% 
-  mutate(kill_by = ifelse(live.dead=="dead", "beetle", "fire"))  %>% 
+ %>% 
   mutate(kill_by = factor(kill_by, levels = ord_class))
+```{r}
+pcf1 = pcf %>% 
+  mutate(kill_by = ifelse(live.dead=="dead", "beetle", "fire")) 
 pcf1
 ```
 
 # Data Visualization
+
 ```{r}
 qplot(x = kill_by, y = bpca.carbon, data = pcf1, geom = "boxplot") +
 stat_summary(fun = mean, aes(shape = "mean"), geom = "point", color = "red", size = 3)
@@ -174,9 +179,9 @@ titleres = as.character(expression(bold("Welch"~t-test*~"for"~a~difference*~"in"
 # This is the t stat with df and p-value
 ttestres1 = as.character(expression(t[6.5]==-4.7*","~italic(p)==0.003))
 # The estimated difference in group means (I calculated from the test results)
-diff1 = as.character(expression(Delta==-21.8~g~BPCA~kg~C^-1))
+diff1 = as.character(expression(Delta==21.8~g~BPCA~kg~C^-1))
 # The 95% CI of the difference
-ci1 = as.character(expression(95*"%"~CI*":"~-33.0~to~-10.6))
+ci1 = as.character(expression(95*"%"~CI*":"~10.6~to~33.0))
 # Put these into a single column of a data.frame
 d1 = data.frame(col = rbind(ttestres1, diff1, ci1) )
 ```
@@ -193,7 +198,7 @@ t1 = gtable_add_grob(t1, grobs = rectGrob(gp = gpar(fill = NA, lwd = NA)),
 t = 1, b = nrow(t1), r = ncol(t1), l = 1)
 ```
 
-
+#might not need
 ```{r}
 ( diff_fit1 = data.frame(coef(fit1),
 confint(fit1)) )
@@ -245,8 +250,8 @@ stat_summary(fun = mean, geom= "point", size = 4) + # Add means to the plot
   scale_shape_manual(values = c(23, 24)) +
   labs(x=(NULL), y= "g BPCA /\nkg C") +
   
-  scale_color_manual(values = c("darkgreen", "tan")) +
-  scale_x_discrete(labels= c("Fire-killed", "Beetle-killed")) +
+  scale_color_manual(values = c("tan", "darkgreen")) +
+  scale_x_discrete(labels= c("Beetle-killed", "Fire-killed")) +
   theme_bw() + 
   theme(legend.position = "none") +  
 theme(panel.grid.major = element_blank()) +
@@ -342,9 +347,9 @@ titleres = as.character(expression(bold("Welch"~t-test*~"for"~a~difference*~"in"
 # This is the t stat with df and p-value
 ttestres2 = as.character(expression(t[5.8]==-4.2*","~italic(p)==0.006))
 # The estimated difference in group means (I calculated from the test results)
-diff2 = as.character(expression(Delta==-15.0~g~BPCA~kg~material^-1))
+diff2 = as.character(expression(Delta==15.0~g~BPCA~kg~material^-1))
 # The 95% CI of the difference
-ci2 = as.character(expression(95*"%"~CI*":"~-23.8~to~-6.2))
+ci2 = as.character(expression(95*"%"~CI*":"~6.2~to~23.8))
 # Put these into a single column of a data.frame
 d2 = data.frame(col = rbind(ttestres2, diff2, ci2) )
 ```
@@ -361,7 +366,7 @@ t2 = gtable_add_grob(t2, grobs = rectGrob(gp = gpar(fill = NA, lwd = NA)),
 t = 1, b = nrow(t2), r = ncol(t2), l = 1)
 ```
 
-#### Model estimates
+#### Model estimates (delete?)
 ```{r}
 ( diff_fit2 = data.frame(coef(fit2),
 confint(fit2)) )
@@ -413,8 +418,8 @@ stat_summary(fun = mean, geom= "point", size = 4) + # Add means to the plot
   scale_shape_manual(values = c(23, 24)) +
   labs(x=(NULL), y= "g BPCA /\nkg material") +
   
-  scale_color_manual(values = c("darkgreen", "tan")) +
-  scale_x_discrete(labels= c("Fire-killed", "Beetle-killed")) +
+  scale_color_manual(values = c("tan", "darkgreen")) +
+  scale_x_discrete(labels= c("Beetle-killed", "Fire-killed")) +
   theme_bw() + 
   theme(legend.position = "none") +  
 theme(panel.grid.major = element_blank()) +
@@ -428,7 +433,9 @@ g2
 ```
 
 ### B6CA Total
+
 #### Summary data
+
 ```{r}
 ( sumdat3 = summarise( group_by(pcf1, "Mortality agent" = kill_by),
 n = n(),
@@ -500,17 +507,22 @@ confint(fit3)
 
 
 ##### Table
+Difference in means
+```{r}
+0.2116667-0.2233333
+```
+
 g B6CA /\nTotal BPCA
 ```{r}
 # Write out the results from the two-sample t-test with unequal variances
 # A title for the test
 titleres = as.character(expression(bold("Welch"~t-test*~"for"~a~difference*~"in"~means)))
 # This is the t stat with df and p-value
-ttestres3 = as.character(expression(t[5.09]==0.18*","~italic(p)==0.86))
+ttestres3 = as.character(expression(t[5.09]==-0.18*","~italic(p)==0.86))
 # The estimated difference in group means (I calculated from the test results)
-diff3 = as.character(expression(Delta==0.012~g~B6CA~Total~BPCA^-1))
+diff3 = as.character(expression(Delta==-0.012~g~B6CA~Total~BPCA^-1))
 # The 95% CI of the difference
-ci3 = as.character(expression(95*"%"~CI*":"~-0.15~to~0.17))
+ci3 = as.character(expression(95*"%"~CI*":"~-0.17~to~0.15))
 # Put these into a single column of a data.frame
 d3 = data.frame(col = rbind(ttestres3, diff3, ci3) )
 ```
@@ -527,7 +539,7 @@ t3 = gtable_add_grob(t3, grobs = rectGrob(gp = gpar(fill = NA, lwd = NA)),
 t = 1, b = nrow(t3), r = ncol(t3), l = 1)
 ```
 
-#### Model estimates
+#### Model estimates (delete?)
 
 ```{r}
 ( diff_fit3 = data.frame(coef(fit3),
@@ -581,9 +593,9 @@ stat_summary(fun = mean, geom= "point", size = 4) + # Add means to the plot
   scale_shape_manual(values = c(23, 24)) +
   labs(x=(NULL), y= "g B6CA /\nTotal BPCA") +
   
-  scale_color_manual(values = c("darkgreen", "tan")) +
+  scale_color_manual(values = c("tan", "darkgreen")) +
   
-scale_x_discrete(labels= c("Fire-killed", "Beetle-killed")) +
+scale_x_discrete(labels= c("Beetle-killed", "Fire-killed")) +
   theme_bw() + 
   theme(legend.position = "none") +  
 theme(panel.grid.major = element_blank()) +
@@ -657,16 +669,16 @@ p3
 
 ```{r fig.height=7, fig.width=6}
 p4 = p1 + 
-  draw_plot(legend_b, x =.70, y = .59, width = .3, height = .3) + 
-  draw_grob(t1,x =.16, y = .80, width = .25, height = .25, scale=.5) +
-  draw_grob(t2,x =.185, y = .465, width = .25, height = .25, scale=.5) +
-  draw_grob(t3,x =.653, y = .135, width = .25, height = .25, scale=.5)
+  draw_plot(legend_b, x =.10, y = .59, width = .3, height = .3) + 
+  draw_grob(t1,x =.66, y = .80, width = .25, height = .25, scale=.5) +
+  draw_grob(t2,x =.66, y = .465, width = .25, height = .25, scale=.5) +
+  draw_grob(t3,x =.21, y = .135, width = .25, height = .25, scale=.5)
 
 p4
 ```
 
 ```{r eval=FALSE, include=FALSE}
-ggsave("../figures/2020-07-09_PyC_live-dead_t-test.jpeg", plot = p4, width = 6, height = 7, units = c("in"), dpi=600 )
+ggsave("../figures/2020-07-10_PyC_live-dead_t-test.jpeg", plot = p4, width = 6, height = 7, units = c("in"), dpi=600 )
 ```
 
 # GLM
