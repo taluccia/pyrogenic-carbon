@@ -164,6 +164,9 @@ coef(fit1)
 # All the confidence intervals for the coefficients
 confint(fit1)
 ```
+```{r}
+data.frame(summary(lsmeans(fit1, pairwise ~ kill_by),type = "response"))
+```
 
 #### t-test
 ```{r}
@@ -323,6 +326,10 @@ plot(fit2, which = 2) # qqnorm plot of residuals
 ```{r}
 summary(fit2)
 ```
+```{r}
+data.frame(summary(lsmeans(fit2, pairwise ~ kill_by),type = "response"))
+```
+
 ```{r}
 # All the coefficients
 coef(fit2)
@@ -490,6 +497,11 @@ plot(fit3, which = 2) # qqnorm plot of residuals
 ```{r}
 summary(fit3)
 ```
+
+```{r}
+data.frame(summary(lsmeans(fit3, pairwise ~ kill_by),type = "response"))
+```
+
 ```{r}
 # All the coefficients
 coef(fit3)
