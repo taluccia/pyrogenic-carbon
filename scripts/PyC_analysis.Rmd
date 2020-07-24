@@ -77,16 +77,16 @@ pcf1
 
 # Data Visualization
 
-```{r echo = TRUE}
+```{r}
 qplot(x = kill_by, y = bpca.carbon, data = pcf1, geom = "boxplot") +
 stat_summary(fun = mean, aes(shape = "mean"), geom = "point", color = "red", size = 3)
 ```
 
-```{r echo = TRUE}
+```{r}
 qplot(x = kill_by, y = bpca.soil, data = pcf1, geom = "boxplot") +
 stat_summary(fun = mean, aes(shape = "mean"), geom = "point", color = "red", size = 3)
 ```
-```{r echo = TRUE}
+```{r}
 qplot(x = kill_by, y = b6.total, data = pcf1, geom = "boxplot") +
 stat_summary(fun = mean, aes(shape = "mean"), geom = "point", color = "red", size = 3)
 ```
@@ -119,31 +119,31 @@ pcf1$fit1 = fitted(fit1)
 pcf1$res1 = residuals(fit1)
 ```
 
-```{r echo = TRUE}
+```{r}
 qplot(x = fit1, y = res1, data = pcf1,
 main = "Residuals vs Fitted Values")
 ```
 
-```{r echo = TRUE}
+```{r}
 qplot(x = kill_by, y = res1, data = pcf1,
 xlab = "Fire-killed v Beetle-killed group",
 ylab = "Residuals",
 main = "Residuals vs Mortality group")
 ```
-```{r echo = TRUE}
+```{r}
 qplot(x = factor(1), y = res1, data = pcf1, geom = "boxplot")
 ```
 
-```{r echo = TRUE}
+```{r}
 qqnorm(pcf1$res1, main = "Normal QQ Plot of Residuals")
 qqline(pcf1$res1) # add reference line to the qq plot
 ```
 
-```{r echo = TRUE}
+```{r}
 plot(fit1, which = 1) # residual vs fitted values
 ```
 
-```{r echo = TRUE}
+```{r}
 plot(fit1, which = 2) # qqnorm plot of residuals
 ```
 
@@ -243,31 +243,31 @@ pcf1$fit2 = fitted(fit2)
 pcf1$res2 = residuals(fit2)
 ```
 
-```{r echo = TRUE}
+```{r}
 qplot(x = fit2, y = res2, data = pcf1,
 main = "Residuals vs Fitted Values")
 ```
 
-```{r echo = TRUE}
+```{r}
 qplot(x = kill_by, y = res2, data = pcf1,
 xlab = "Fire-killed v Beetle-killed group",
 ylab = "Residuals",
 main = "Residuals vs Mortality group")
 ```
-```{r echo = TRUE}
+```{r}
 qplot(x = factor(1), y = res2, data = pcf1, geom = "boxplot")
 ```
 
-```{r echo = TRUE}
+```{r}
 qqnorm(pcf1$res2, main = "Normal QQ Plot of Residuals")
 qqline(pcf1$res2) # add reference line to the qq plot
 ```
 
-```{r echo = TRUE}
+```{r}
 plot(fit2, which = 1) # residual vs fitted values
 ```
 
-```{r echo = TRUE}
+```{r}
 plot(fit2, which = 2) # qqnorm plot of residuals
 ```
 
@@ -362,7 +362,7 @@ pcf1$fit3 = fitted(fit3)
 pcf1$res3 = residuals(fit3)
 ```
 
-```{r echo = TRUE}
+```{r}
 qplot(x = fit3, y = res3, data = pcf1,
 main = "Residuals vs Fitted Values")
 ```
