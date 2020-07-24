@@ -2,3 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
+
+
+# exclude specific folders from push to github
+figures/*
