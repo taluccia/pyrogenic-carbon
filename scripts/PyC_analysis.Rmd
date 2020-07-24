@@ -1,17 +1,15 @@
 ---
-title: "Beetle Kill"
-author: "Lauren"
-date: "8/14/2018"
-output:
-  pdf_document: default
-  html_document: default
+title: "Pyrogenic Carbon: Beetle-killed vs. fire-killed snags"
+author: "Anna Talucci"
+date: "12/3/2019"
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Pole Creek Fire Data
+# Overview
 
 The purpose of this study was to see if the amount / chemical structure of PyC that is produced during a forest fire depends on whether the trees were alive at the time of fire.
 
@@ -25,8 +23,7 @@ PCF samples were ground in a ball grinder on 6/21/18
 
 ***
 
-
-#Metadata
+# Metadata
 
 * jh.number:	index number used for internal tracking
 * name:	sample name used during analysis
@@ -71,9 +68,7 @@ pcf=subset(bk,field.fire=="PCF")
 ```
 
 Add column for beetle-killed and fire-killed category
-ord_class = c("fire", "beetle")
- %>% 
-  mutate(kill_by = factor(kill_by, levels = ord_class))
+
 ```{r}
 pcf1 = pcf %>% 
   mutate(kill_by = ifelse(live.dead=="dead", "beetle", "fire")) 
@@ -82,23 +77,24 @@ pcf1
 
 # Data Visualization
 
-```{r}
+```{r echo = TRUE}
 qplot(x = kill_by, y = bpca.carbon, data = pcf1, geom = "boxplot") +
 stat_summary(fun = mean, aes(shape = "mean"), geom = "point", color = "red", size = 3)
 ```
 
-```{r}
+```{r echo = TRUE}
 qplot(x = kill_by, y = bpca.soil, data = pcf1, geom = "boxplot") +
 stat_summary(fun = mean, aes(shape = "mean"), geom = "point", color = "red", size = 3)
 ```
-```{r}
+```{r echo = TRUE}
 qplot(x = kill_by, y = b6.total, data = pcf1, geom = "boxplot") +
 stat_summary(fun = mean, aes(shape = "mean"), geom = "point", color = "red", size = 3)
 ```
 
 # Analysis
 
-## With Linear Model (lm)
+Analyses were performed with linear models. We used a Welch t-test with unequal variance to test for a difference in means between beetle-killed and fire-killed snags.
+
 ### BPCA carbon
 #### Summary data
 ```{r}
@@ -123,57 +119,51 @@ pcf1$fit1 = fitted(fit1)
 pcf1$res1 = residuals(fit1)
 ```
 
-```{r}
+```{r echo = TRUE}
 qplot(x = fit1, y = res1, data = pcf1,
 main = "Residuals vs Fitted Values")
 ```
 
-```{r}
+```{r echo = TRUE}
 qplot(x = kill_by, y = res1, data = pcf1,
 xlab = "Fire-killed v Beetle-killed group",
 ylab = "Residuals",
 main = "Residuals vs Mortality group")
 ```
-```{r}
+```{r echo = TRUE}
 qplot(x = factor(1), y = res1, data = pcf1, geom = "boxplot")
 ```
 
-```{r}
+```{r echo = TRUE}
 qqnorm(pcf1$res1, main = "Normal QQ Plot of Residuals")
 qqline(pcf1$res1) # add reference line to the qq plot
 ```
 
-```{r}
+```{r echo = TRUE}
 plot(fit1, which = 1) # residual vs fitted values
 ```
 
-```{r}
+```{r echo = TRUE}
 plot(fit1, which = 2) # qqnorm plot of residuals
 ```
 
-#### Summary
+#### Model Summary
+
 ```{r}
 summary(fit1)
 ```
-```{r}
-# All the coefficients
-coef(fit1)
-```
 
-```{r}
-# All the confidence intervals for the coefficients
-confint(fit1)
-```
 ```{r}
 data.frame(summary(lsmeans(fit1, pairwise ~ kill_by),type = "response"))
 ```
 
 #### t-test
+
 ```{r}
 ( respunequal = t.test(bpca.carbon ~ kill_by, data = pcf1) )
 ```
 
-##### Table
+##### Table of estimates
 "g BPCA /\nkg material"
 ```{r}
 # Write out the results from the two-sample t-test with unequal variances
@@ -201,50 +191,9 @@ t1 = gtable_add_grob(t1, grobs = rectGrob(gp = gpar(fill = NA, lwd = NA)),
 t = 1, b = nrow(t1), r = ncol(t1), l = 1)
 ```
 
-#might not need
-```{r}
-( diff_fit1 = data.frame(coef(fit1),
-confint(fit1)) )
-```
-```{r}
-# Rename column names
-names(diff_fit1) = c("Estimate", "Lower", "Upper")
-diff_fit1
-```
-```{r}
-rownames(diff_fit1)
-```
-
-
-```{r}
-( diff_fit1$kill_by = factor(rownames(diff_fit1),
-levels = c("(Intercept)",   "kill_bybeetle"),
-labels = c("fire", "beetle") ) )
-```
 
 #### Graph
 
-```{r}
-ggplot() + 
-      geom_point(data = diff_fit1, aes(x = kill_by, y = Estimate, color = kill_by), size = 3, position = position_dodge(width = .75)) +  
-      geom_errorbar(data = diff_fit1, width = .2, lwd = .75, aes(x = kill_by, y = Estimate, ymin = Lower, ymax = Upper, color = kill_by), position = position_dodge(width = .75)) + 
- 
-    geom_point(data= pcf1, aes(x = kill_by, y = bpca.carbon, color = kill_by, shape = bark.char), size = 3, position = position_jitter(w = 0.15, h = 0, seed=10)) +
-  scale_shape_manual(values = c(23, 24)) +
-  labs(x=(NULL), y= "g BPCA /\nkg C") +
-  scale_color_manual(values = c("darkgreen", "tan")) + 
-  
-scale_x_discrete(labels= c("Fire-killed", "Beetle-killed")) +
-  theme_bw() + 
-  theme(legend.position = "none") +  
-theme(panel.grid.major = element_blank()) +
-    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
-        axis.text.x = element_text(size = 10, color = "black"),
-        axis.text.y = element_text(size = 10, color = "black"),
-        axis.line = element_line(colour = "black"))
-
-```
-#### Boxplot
 ```{r}
 g1 = ggplot(pcf1, aes(x = kill_by, y = bpca.carbon, color=kill_by) ) + # define plot axes
   geom_boxplot(outlier.shape = NA) + # Add boxplots for each group
@@ -294,50 +243,40 @@ pcf1$fit2 = fitted(fit2)
 pcf1$res2 = residuals(fit2)
 ```
 
-```{r}
+```{r echo = TRUE}
 qplot(x = fit2, y = res2, data = pcf1,
 main = "Residuals vs Fitted Values")
 ```
 
-```{r}
+```{r echo = TRUE}
 qplot(x = kill_by, y = res2, data = pcf1,
 xlab = "Fire-killed v Beetle-killed group",
 ylab = "Residuals",
 main = "Residuals vs Mortality group")
 ```
-```{r}
+```{r echo = TRUE}
 qplot(x = factor(1), y = res2, data = pcf1, geom = "boxplot")
 ```
 
-```{r}
+```{r echo = TRUE}
 qqnorm(pcf1$res2, main = "Normal QQ Plot of Residuals")
 qqline(pcf1$res2) # add reference line to the qq plot
 ```
 
-```{r}
+```{r echo = TRUE}
 plot(fit2, which = 1) # residual vs fitted values
 ```
 
-```{r}
+```{r echo = TRUE}
 plot(fit2, which = 2) # qqnorm plot of residuals
 ```
 
-#### Summary
+#### Model Summary
 ```{r}
 summary(fit2)
 ```
 ```{r}
 data.frame(summary(lsmeans(fit2, pairwise ~ kill_by),type = "response"))
-```
-
-```{r}
-# All the coefficients
-coef(fit2)
-```
-
-```{r}
-# All the confidence intervals for the coefficients
-confint(fit2)
 ```
 
 #### t-test
@@ -373,50 +312,8 @@ t2 = gtable_add_grob(t2, grobs = rectGrob(gp = gpar(fill = NA, lwd = NA)),
 t = 1, b = nrow(t2), r = ncol(t2), l = 1)
 ```
 
-#### Model estimates (delete?)
-```{r}
-( diff_fit2 = data.frame(coef(fit2),
-confint(fit2)) )
-```
-```{r}
-# Rename column names
-names(diff_fit2) = c("Estimate", "Lower", "Upper")
-diff_fit2
-```
-```{r}
-rownames(diff_fit2)
-```
-
-
-```{r}
-( diff_fit2$kill_by = factor(rownames(diff_fit2),
-levels = c("(Intercept)",   "kill_bybeetle"),
-labels = c("fire", "beetle") ) )
-```
-
 #### Graph
 
-```{r}
-ggplot() + 
-      geom_point(data = diff_fit2, aes(x = kill_by, y = Estimate, color = kill_by), size = 3, position = position_dodge(width = .75)) +  
-      geom_errorbar(data = diff_fit2, width = .2, lwd = .75, aes(x = kill_by, y = Estimate, ymin = Lower, ymax = Upper, color = kill_by), position = position_dodge(width = .75)) + 
- 
-    geom_point(data= pcf1, aes(x = kill_by, y = bpca.soil, color = kill_by, shape = bark.char), size = 3, position = position_jitter(w = 0.15, h = 0, seed=10)) +
-  scale_shape_manual(values = c(23, 24)) +
-  labs(x=(NULL), y= "g BPCA /\nkg material") +
-  scale_color_manual(values = c("darkgreen", "tan")) + 
-  
-scale_x_discrete(labels= c("Fire-killed", "Beetle-killed")) +
-  theme_bw() + 
-  theme(legend.position = "none") +  
-theme(panel.grid.major = element_blank()) +
-    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
-        axis.text.x = element_text(size = 10, color = "black"),
-        axis.text.y = element_text(size = 10, color = "black"),
-        axis.line = element_line(colour = "black"))
-
-```
-#### Boxplot
 ```{r}
 g2 = ggplot(pcf1, aes(x = kill_by, y = bpca.soil, color=kill_by) ) + # define plot axes
   geom_boxplot(outlier.shape = NA) + # Add boxplots for each group
@@ -465,51 +362,41 @@ pcf1$fit3 = fitted(fit3)
 pcf1$res3 = residuals(fit3)
 ```
 
-```{r}
+```{r echo = TRUE}
 qplot(x = fit3, y = res3, data = pcf1,
 main = "Residuals vs Fitted Values")
 ```
 
-```{r}
+```{r echo = TRUE}
 qplot(x = kill_by, y = res3, data = pcf1,
 xlab = "Fire-killed v Beetle-killed group",
 ylab = "Residuals",
 main = "Residuals vs Mortality group")
 ```
-```{r}
+```{r echo = TRUE}
 qplot(x = factor(1), y = res3, data = pcf1, geom = "boxplot")
 ```
 
-```{r}
+```{r echo = TRUE}
 qqnorm(pcf1$res3, main = "Normal QQ Plot of Residuals")
 qqline(pcf1$res3) # add reference line to the qq plot
 ```
 
-```{r}
+```{r echo = TRUE}
 plot(fit3, which = 1) # residual vs fitted values
 ```
 
-```{r}
+```{r echo = TRUE}
 plot(fit3, which = 2) # qqnorm plot of residuals
 ```
 
-#### Summary
+#### Model Summary
 ```{r}
 summary(fit3)
 ```
 
 ```{r}
 data.frame(summary(lsmeans(fit3, pairwise ~ kill_by),type = "response"))
-```
-
-```{r}
-# All the coefficients
-coef(fit3)
-```
-
-```{r}
-# All the confidence intervals for the coefficients
-confint(fit3)
 ```
 
 #### t-test
@@ -551,52 +438,9 @@ t3 = gtable_add_grob(t3, grobs = rectGrob(gp = gpar(fill = NA, lwd = NA)),
 t = 1, b = nrow(t3), r = ncol(t3), l = 1)
 ```
 
-#### Model estimates (delete?)
-
-```{r}
-( diff_fit3 = data.frame(coef(fit3),
-confint(fit3)) )
-```
-
-```{r}
-# Rename column names
-names(diff_fit3) = c("Estimate", "Lower", "Upper")
-diff_fit3
-```
-```{r}
-rownames(diff_fit3)
-```
-
-
-```{r}
-( diff_fit3$kill_by = factor(rownames(diff_fit3),
-levels = c("(Intercept)",   "kill_bybeetle"),
-labels = c("fire", "beetle") ) )
-```
 
 #### Graph
 
-```{r}
-ggplot() + 
-      geom_point(data = diff_fit3, aes(x = kill_by, y = Estimate, color = kill_by), size = 3, position = position_dodge(width = .75)) +  
-      geom_errorbar(data = diff_fit3, width = .2, lwd = .75, aes(x = kill_by, y = Estimate, ymin = Lower, ymax = Upper, color = kill_by), position = position_dodge(width = .75)) + 
- 
-    geom_point(data= pcf1, aes(x = kill_by, y = b6.total, color = kill_by, shape = bark.char), size = 3, position = position_jitter(w = 0.15, h = 0, seed=10)) +
-  scale_shape_manual(values = c(23, 24)) +
-  labs(x=(NULL), y= "g B6CA /\nTotal BPCA") +
-  scale_color_manual(values = c("darkgreen", "tan")) + 
-  
-scale_x_discrete(labels= c("Fire-killed", "Beetle-killed")) +
-  theme_bw() + 
-  theme(legend.position = "none") +  
-theme(panel.grid.major = element_blank()) +
-    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
-        axis.text.x = element_text(size = 10, color = "black"),
-        axis.text.y = element_text(size = 10, color = "black"),
-        axis.line = element_line(colour = "black"))
-
-```
-#### Boxplot
 ```{r}
 g3 = ggplot(pcf1, aes(x = kill_by, y = b6.total, color=kill_by) ) + # define plot axes
   geom_boxplot(outlier.shape = NA) + # Add boxplots for each group
@@ -660,26 +504,6 @@ p1
 ### Gridded with t-test data
 
 ```{r fig.height=7, fig.width=6}
-p2 = p1 + 
-  draw_grob(t1,x =.16, y = .80, width = .25, height = .25, scale=.5) +
-  draw_grob(t2,x =.185, y = .465, width = .25, height = .25, scale=.5) +
-  draw_grob(t3,x =.653, y = .133, width = .25, height = .25, scale=.5)
-
-p2
-```
-
-### Gridded with t-test data leg bot
-```{r fig.height=7, fig.width=6}
-
-
-p3 = plot_grid(p2, legend_b, ncol = 1, rel_heights = c(1, .1))
-
-p3
-```
-
-### Gridded with t-test data
-
-```{r fig.height=7, fig.width=6}
 p4 = p1 + 
   draw_plot(legend_b, x =.10, y = .59, width = .3, height = .3) + 
   draw_grob(t1,x =.66, y = .80, width = .25, height = .25, scale=.5) +
@@ -693,470 +517,5 @@ p4
 ggsave("../figures/2020-07-10_PyC_live-dead_t-test.jpeg", plot = p4, width = 6, height = 7, units = c("in"), dpi=600 )
 ```
 
-# GLM
-## Model 1 - BPCA per Carbon
-```{r}
-mod1 = glm(bpca.carbon ~ live.dead, data = pcf, family = gaussian)
-```
 
-
-
-### Residuals with DHARMa
-```{r, include=FALSE}
-mod1.res = simulateResiduals(fittedModel = mod1, n = 500)
-mod1.res$scaledResiduals
-mod1.res$scaledResidualsNormal
-```
-
-In the plot below we are looking for the points in the QQ plot to fall along the RED linen. In the Residuals vs.predicted plot were are looking for the lines to be relatively horizontal. All looks good. 
-```{r}
-plotSimulatedResiduals(simulationOutput = mod1.res)
-```
-
-```{r}
-testDispersion(mod1.res)
-```
-
-### Sumamry
-```{r}
-summary(mod1)
-```
-
-```{r}
-summary(lsmeans(mod1, pairwise ~ live.dead), type = "response", infer = TRUE, level = .90, adjust = "bon")
-```
-
-### Data for Graph
-
-```{r}
-mod1_graph = data.frame(summary(lsmeans(mod1, pairwise ~ live.dead),type = "response"))
-names(mod1_graph)[1:6] = c("live.dead", "response", "se", "df", "lcl", "ucl")
-mod1_graph
-```
-
-```{r eval=FALSE, include=FALSE}
-levels(mod1_graph$lsmeans.live.dead)[levels(mod1_graph$lsmeans.live.dead)=="dead"] = "Charred"
-levels(mod1_graph$lsmeans.live.dead)[levels(mod1_graph$lsmeans.live.dead)=="live"] = "Scorched"
-
-( mod1_graph1 = dplyr::select(mod1_graph, lsmeans.live.dead:lsmeans.asymp.UCL))
-
-
-
-names(mod1_graph1)[1:6] = c("live.dead", "response", "se", "df", "lcl", "ucl")
-mod1_graph1 = data.frame(mod1_graph1)
-
-
-```
-
-### Graph
-
-```{r}
-mod1_plot = ggplot(data = mod1_graph, aes(x = live.dead, y = response, color = live.dead) ) + 
-   geom_errorbar(width = .2, lwd = .75, aes(ymin = lcl, ymax = ucl), position = position_dodge(width = .75)) + 
-geom_point(size = 3, position = position_dodge(width = .75)) + 
-  labs(x=(NULL), y= "g BPCA /\nkg C") +
-  scale_color_manual(values = c("tan", "darkgreen")) + 
-  theme_bw() + 
-  theme(legend.position = "none") +  
-theme(panel.grid.major = element_blank()) +
-    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
-        axis.text.x = element_text(size = 10, color = "black"),
-        axis.text.y = element_text(size = 10, color = "black"),
-        axis.line = element_line(colour = "black"))
-
-mod1_plot  
-```
-
-
-
-### Graph with raw
-```{r}
-plot1_raw = ggplot() + 
-      geom_point(data = mod1_graph, aes(x = live.dead, y = response, color = live.dead), size = 3, position = position_dodge(width = .75)) +  
-      geom_errorbar(data = mod1_graph, width = .2, lwd = .75, aes(x = live.dead, y = response, ymin = lcl, ymax = ucl, color = live.dead), position = position_dodge(width = .75)) + 
- 
-    geom_point(data= pcf, aes(x = live.dead, y = bpca.carbon, color = live.dead, shape = bark.char), size = 3, position = position_jitter(w = 0.15, h = 0, seed=10)) +
-  scale_shape_manual(values = c(23, 24)) +
-  labs(x=(NULL), y= "g BPCA /\nkg C") +
-  scale_color_manual(values = c("tan", "darkgreen")) + 
-  scale_x_discrete(labels= c("Beetle-killed", "Fire-killed")) +
-  theme_bw() + 
-  theme(legend.position = "none") +  
-theme(panel.grid.major = element_blank()) +
-    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
-        axis.text.x = element_text(size = 10, color = "black"),
-        axis.text.y = element_text(size = 10, color = "black"),
-        axis.line = element_line(colour = "black"))
-
-plot1_raw
-```
-## Model 2 - BPCA per Material
-```{r}
-mod2 = glm(bpca.soil ~ live.dead, data = pcf, family = gaussian)
-```
-
-### Residuals with DHARMa
-```{r, include=FALSE}
-mod2.res = simulateResiduals(fittedModel = mod2, n = 250)
-mod2.res$scaledResiduals
-mod2.res$scaledResidualsNormal
-```
-
-In the plot below we are looking for the points in the QQ plot to fall along the RED linen. In the Residuals vs.predicted plot were are looking for the lines to be relatively horizontal. All looks good. 
-```{r}
-plotSimulatedResiduals(simulationOutput = mod2.res)
-```
-
-```{r}
-testDispersion(mod2.res)
-```
-
-### Sumamry
-```{r}
-summary(mod2)
-```
-
-```{r}
-summary(lsmeans(mod2, pairwise ~ live.dead), type = "response", infer = TRUE, level = .90, adjust = "bon")
-```
-
-
-
-### Data for Graph
-```{r}
-mod2_graph = data.frame(summary(lsmeans(mod2, pairwise ~ live.dead),type = "response"))
-names(mod2_graph)[1:6] = c("live.dead", "response", "se", "df", "lcl", "ucl")
-mod2_graph
-```
-
-```{r eval=FALSE, include=FALSE}
-levels(mod2_graph$lsmeans.live.dead)[levels(mod2_graph$lsmeans.live.dead)=="dead"] = "Charred"
-levels(mod2_graph$lsmeans.live.dead)[levels(mod2_graph$lsmeans.live.dead)=="live"] = "Scorched"
-
-( mod2_graph2 = dplyr::select(mod2_graph, lsmeans.live.dead:lsmeans.asymp.UCL))
-
-
-
-names(mod2_graph2)[1:6] = c("live.dead", "response", "se", "df", "lcl", "ucl")
-mod2_graph2 = data.frame(mod2_graph2)
-
-
-```
-
-
-### Graph
-```{r}
-mod2_plot = ggplot(data = mod2_graph, aes(x = live.dead, y = response, color = live.dead) ) + 
-   geom_errorbar(width = .2, lwd = .75, aes(ymin = lcl, ymax = ucl), position = position_dodge(width = .75)) + 
-geom_point(size = 3, position = position_dodge(width = .75)) + 
-  labs(x=(NULL), y= "g BPCA /\nkg material") +
-  scale_color_manual(values = c("tan", "darkgreen")) + 
-  theme_bw() + 
-  theme(legend.position = "none") +  
-theme(panel.grid.major = element_blank()) +
-    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
-        axis.text.x = element_text(size = 10, color = "black"),
-        axis.text.y = element_text(size = 10, color = "black"),
-        axis.line = element_line(colour = "black"))
-
-mod2_plot  
-```
-
-### Graph with raw
-
-
-```{r}
-plot2_raw = ggplot() + 
-      geom_point(data = mod2_graph, aes(x = live.dead, y = response, color = live.dead), size = 3, position = position_dodge(width = .75)) +  
-      geom_errorbar(data = mod2_graph, width = .2, lwd = .75, aes(x = live.dead, y = response, ymin = lcl, ymax = ucl, color = live.dead), position = position_dodge(width = .75)) + 
-  scale_color_manual(values = c("tan", "darkgreen")) +
- 
-    geom_point(data= pcf, aes(x = live.dead, y = bpca.soil, color = live.dead, shape = bark.char), size = 3, position = position_jitter(w = 0.15, h = 0, seed=10)) +
-  scale_shape_manual(values = c(23, 24)) +
-  labs(x=(NULL), y= "g BPCA /\nkg material") +
-  scale_color_manual(values = c("tan", "darkgreen")) + 
-  scale_x_discrete(labels= c("Beetle-killed", "Fire-killed")) +
-  theme_bw() + 
-  theme(legend.position = "none") +  
-theme(panel.grid.major = element_blank()) +
-    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
-        axis.text.x = element_text(size = 10, color = "black"),
-        axis.text.y = element_text(size = 10, color = "black"),
-        axis.line = element_line(colour = "black"))
-
-plot2_raw
-```
-
-## Model 3 - B6 total
-```{r}
-mod3 = glm(b6.total ~ live.dead, data = pcf, family = gaussian)
-```
-
-### Residuals with DHARMa
-```{r, include=FALSE}
-mod3.res = simulateResiduals(fittedModel = mod3, n = 250)
-mod3.res$scaledResiduals
-mod3.res$scaledResidualsNormal
-```
-
-In the plot below we are looking for the points in the QQ plot to fall along the RED linen. In the Residuals vs.predicted plot were are looking for the lines to be relatively horizontal. All looks good. 
-```{r}
-plotSimulatedResiduals(simulationOutput = mod3.res)
-```
-
-```{r}
-testDispersion(mod3.res)
-```
-
-### Sumamry
-```{r}
-summary(mod3)
-```
-
-```{r}
-summary(lsmeans(mod3, pairwise ~ live.dead),type = "response", infer = TRUE, level = .9, adjust = "bon")
-```
-
-
-### Data for Graph
-```{r}
-mod3_graph = data.frame(summary(lsmeans(mod3, pairwise ~ live.dead),type = "response"))
-
-names(mod3_graph)[1:6] = c("live.dead", "response", "se", "df", "lcl", "ucl")
-mod3_graph
-```
-
-```{r eval=FALSE, include=FALSE}
-levels(mod3_graph$lsmeans.live.dead)[levels(mod3_graph$lsmeans.live.dead)=="dead"] = "Charred"
-levels(mod3_graph$lsmeans.live.dead)[levels(mod3_graph$lsmeans.live.dead)=="live"] = "Scorched"
-
-( mod3_graph3 = dplyr::select(mod3_graph, lsmeans.live.dead:lsmeans.asymp.UCL))
-
-
-
-names(mod3_graph3)[1:6] = c("live.dead", "response", "se", "df", "lcl", "ucl")
-mod3_graph3 = data.frame(mod3_graph3)
-
-
-```
-
-
-### Graph 
-```{r}
-mod3_plot = ggplot(data = mod3_graph, aes(x = live.dead, y = response, color = live.dead) ) + 
-   geom_errorbar(width = .2, lwd = .75, aes(ymin = lcl, ymax = ucl), position = position_dodge(width = .75)) + 
-geom_point(size = 3, position = position_dodge(width = .75)) + 
-  labs(x=(NULL), y= "g B6CA /\nTotal BPCA") +
-  scale_color_manual(values = c("tan", "darkgreen")) + 
-  theme_bw() + 
-  theme(legend.position = "none") +  
-theme(panel.grid.major = element_blank()) +
-    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
-        axis.text.x = element_text(size = 10, color = "black"),
-        axis.text.y = element_text(size = 10, color = "black"),
-        axis.line = element_line(colour = "black"))
-
-mod3_plot  
-```
-
-### Graph with raw
-
-```{r}
-plot3_raw = ggplot() + 
-      geom_point(data = mod3_graph, aes(x = live.dead, y = response, color = live.dead), size = 3, position = position_dodge(width = .75)) +  
-      geom_errorbar(data = mod3_graph, width = .2, lwd = .75, aes(x = live.dead, y = response, ymin = lcl, ymax = ucl, color = live.dead), position = position_dodge(width = .75)) + 
-  scale_color_manual(values = c("tan", "darkgreen")) +
- 
-    geom_point(data= pcf, aes(x = live.dead, y = b6.total, color = live.dead, shape = bark.char), size = 3, position = position_jitter(w = 0.15, h = 0, seed=10)) +
-  scale_shape_manual(values = c(23, 24)) +
-  labs(x=(NULL), y= "g B6CA /\nTotal BPCA") +
-  scale_color_manual(values = c("tan", "darkgreen")) + 
-  scale_x_discrete(labels= c("Beetle-killed", "Fire-killed")) +
-  theme_bw() + 
-  theme(legend.position = "none") +  
-theme(panel.grid.major = element_blank()) +
-    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
-        axis.text.x = element_text(size = 10, color = "black"),
-        axis.text.y = element_text(size = 10, color = "black"),
-        axis.line = element_line(colour = "black"))
-
-plot3_raw
-```
-
-## Manuscript Figures
-
-### Without raw data
-```{r fig.height=5.25, fig.width=4.75}
-
-exp1_figure1 = cowplot::plot_grid(mod1_plot, mod2_plot, mod3_plot, labels = c("A", "B", "C"), ncol = 1) 
-exp1_figure1
-```
-
-```{r fig.height=5.25, fig.width=4.75}
-exp1_figure2 = exp1_figure1 + 
-  draw_label("*", x = .55, y = .95, size = 36, fontface = "bold") + 
-  draw_label("*", x = .55, y = .6, size = 36, fontface = "bold") 
-
-exp1_figure2
-```
-
-```{r eval=FALSE, include=FALSE}
-ggsave("../figures/2020-07-07_exp1_dead-live_analysis.jpeg", plot = exp1_figure2, width = 4.75, height = 5.25, units = c("in"), dpi=600 )
-```
-
-### With Raw data
-
-```{r}
-legend_bottom = ggplot(pcf, aes(x = live.dead, y = b6.total)) +
-  geom_jitter(aes(shape = bark.char), size = 3) +
-  labs(title = "ACI of PyC", x=(NULL), y= "g B6CA /\nTotal BPCA") +
-  scale_shape_manual(values = c(23, 24)) +
-  theme_bw() + 
-  theme(legend.position = "bottom", 
-        legend.title = element_blank(),
-              legend.text = element_text(size = 9)) +  
-  theme(legend.background = element_rect(colour = 'black', fill = 'white', linetype='solid')) +
-theme(panel.grid.major = element_blank())+
-    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
-        axis.text.x = element_text(size = 10, color = "black"),
-        axis.text.y = element_text(size = 10, color = "black"),
-        axis.line = element_line(colour = "black"))
-
-legend_bottom
-  
-```
-
-
-
-```{r fig.height=5.25, fig.width=4.75}
-
-grid_fig2 = cowplot::plot_grid(plot1_raw, plot2_raw, plot3_raw, labels = c("A", "B", "C"), ncol = 1) 
-grid_fig2
-```
-
-```{r fig.height=5.25, fig.width=4.75}
-figure2 = exp1_figure1 + 
-  draw_label("*", x = .55, y = .95, size = 36, fontface = "bold") + 
-  draw_label("*", x = .55, y = .6, size = 36, fontface = "bold") 
-
-exp1_figure2
-```
-
-
-
-```{r fig.height=5.25, fig.width=4.75}
-legend2 = get_legend(legend_bottom)
-grid_fig3 = ggdraw(grid_fig2) +
-  draw_plot(legend2, x =.65, y = .78, width = .3, height = .3) + 
-  draw_label("*", x = .55, y = .94, size = 36, fontface = "bold") + 
-  draw_label("*", x = .55, y = .6, size = 36, fontface = "bold") 
-
-grid_fig3
-
-```
-
-```{r eval=FALSE, include=FALSE}
-ggsave("../figures/2020-07-07_PyC_live-dead_raw.jpeg", plot = grid_fig3, width = 4.75, height = 5.25, units = c("in"), dpi=600 )
-```
-
-
-# Boxplot with raw data
-
-
-```{r}
-carbon_plot = ggplot(pcf, aes(x = live.dead, y = bpca.carbon, color = live.dead)) +
-  geom_boxplot() +
-  geom_point(aes(shape = bark.char), size = 3, position = position_jitter(w = 0.15, h = 0, seed=10)) +
-  labs(x=(NULL), y= "g BPCA /\nkg Carbon") +
-  scale_color_manual(values = c("tan", "darkgreen")) + 
-  theme_bw() + 
-  theme(legend.position = "none") +  
-theme(panel.grid.major = element_blank())+
-    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
-        axis.text.x = element_text(size = 10, color = "black"),
-        axis.text.y = element_text(size = 10, color = "black"),
-        axis.line = element_line(colour = "black"))
-
-carbon_plot
-  
-```
-
-```{r}
-material_plot = ggplot(pcf, aes(x = live.dead, y = bpca.soil, color = live.dead)) +
-  geom_boxplot() +
-  geom_point(aes(shape = bark.char), size = 3, position = position_jitter(w = 0.15, h = 0, seed=10)) +
-  labs(x=(NULL), y= "g BPCA /\nkg material") +
-  scale_color_manual(values = c("tan", "darkgreen")) + 
-  theme_bw() + 
-  theme(legend.position = "none") +  
-theme(panel.grid.major = element_blank())+
-    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
-        axis.text.x = element_text(size = 10, color = "black"),
-        axis.text.y = element_text(size = 10, color = "black"),
-        axis.line = element_line(colour = "black"))
-material_plot
-```
-scale_fill_manual(values = alpha(c("blue", "red"), .3))
-```{r}
-aci_plot = ggplot(pcf, aes(x = live.dead, y = b6.total, color = live.dead)) +
-  geom_boxplot(outlier.shape = NA) +
-  geom_point(aes(color = live.dead, fill = live.dead, shape = bark.char), size = 3, position = position_jitter(w = 0.15, h = 0, seed=10)) +
-  labs(x=(NULL), y= "g B6CA /\nTotal BPCA") +
-  scale_fill_manual(values = c("tan", "darkgreen")) +
-  scale_color_manual(values = c("tan", "darkgreen")) + 
-  theme_bw() + 
-  theme(legend.position = "none") +  
-theme(panel.grid.major = element_blank())+
-    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
-        axis.text.x = element_text(size = 10, color = "black"),
-        axis.text.y = element_text(size = 10, color = "black"),
-        axis.line = element_line(colour = "black"))
-
-aci_plot
-  
-```
-
-
-```{r fig.height=5.25, fig.width=4.75}
-legend = get_legend(legend)
-fig2 = cowplot::plot_grid(carbon_plot, material_plot, aci_plot, labels = c("A", "B", "C"), ncol = 1) 
-fig2
-```
-
-
-
-```{r fig.height=5.25, fig.width=4.75}
-legend2 = get_legend(legend_bottom)
-grid_final2 = ggdraw(fig2) +
-  draw_plot(legend2, x =.65, y = .78, width = .3, height = .3) +
-    draw_label("*", x = .55, y = .94, size = 36, fontface = "bold") +
-  draw_label("*", x = .55, y = .61, size = 36, fontface = "bold")
-
-grid_final2
-```
-
-```{r eval=FALSE, include=FALSE}
-ggsave("../figures/2019-12-19_PyC_live-dead.jpeg", plot = grid_final2, width = 4.75, height = 5.25, units = c("in"), dpi=600 )
-```
- 
-```{r fig.height=5.25, fig.width=4.75}
-( grid_final3 = cowplot::plot_grid(fig2, legend, ncol=1, rel_heights = c(1, .06))  )
-```
-```{r eval=FALSE, include=FALSE}
-ggsave("../figures/2019-12-17_PyC_live-dead.jpeg", plot = grid_final3, width = 6, height = 7, units = c("in"), dpi=600 )
-```
-
-
-```{r fig.height=5.25, fig.width=4.75}
-legend2 = get_legend(legend_bottom)
-grid_sup = ggdraw(fig2) +
-  draw_plot(legend2, x =.65, y = .78, width = .3, height = .3) 
-
-grid_sup
-
-```
-
-```{r eval=FALSE, include=FALSE}
-ggsave("../figures/2019-12-19_PyC_live-dead_sup.jpeg", plot = grid_sup, width = 4.75, height = 5.25, units = c("in"), dpi=600 )
-```
 **THE END**
