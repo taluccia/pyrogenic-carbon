@@ -501,6 +501,9 @@ p1 = cowplot::plot_grid(g1, g2, g3, labels = c("A", "B", "C"), ncol = 1)
 p1
 ```
 
+```{r eval=FALSE, include=FALSE}
+ggsave("../figures/2020-07-28_PyC_live-dead_t-test.jpeg", plot = p1, width = 6, height = 7, units = c("in"), dpi=600 )
+```
 ### Gridded with t-test data
 
 ```{r fig.height=7, fig.width=6}
