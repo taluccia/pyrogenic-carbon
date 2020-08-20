@@ -207,9 +207,9 @@ stat_summary(fun = mean, geom= "point", size = 4) + # Add means to the plot
   theme_bw() + 
   theme(legend.position = "none") +  
 theme(panel.grid.major = element_blank()) +
-    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
-        axis.text.x = element_text(size = 10, color = "black"),
-        axis.text.y = element_text(size = 10, color = "black"),
+    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1, family = "sans"),
+        axis.text.x = element_text(size = 10, color = "black", family = "sans"),
+        axis.text.y = element_text(size = 10, color = "black", family = "sans"),
         axis.line = element_line(colour = "black"))
 
 
@@ -327,9 +327,9 @@ stat_summary(fun = mean, geom= "point", size = 4) + # Add means to the plot
   theme_bw() + 
   theme(legend.position = "none") +  
 theme(panel.grid.major = element_blank()) +
-    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
-        axis.text.x = element_text(size = 10, color = "black"),
-        axis.text.y = element_text(size = 10, color = "black"),
+    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1, family = "sans"),
+        axis.text.x = element_text(size = 10, color = "black", family = "sans"),
+        axis.text.y = element_text(size = 10, color = "black", family = "sans"),
         axis.line = element_line(colour = "black"))
 
 
@@ -455,9 +455,9 @@ scale_x_discrete(labels= c("Beetle-killed", "Fire-killed")) +
   theme_bw() + 
   theme(legend.position = "none") +  
 theme(panel.grid.major = element_blank()) +
-    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
-        axis.text.x = element_text(size = 10, color = "black"),
-        axis.text.y = element_text(size = 10, color = "black"),
+    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1, family = "sans"),
+        axis.text.x = element_text(size = 10, color = "black", family = "sans"),
+        axis.text.y = element_text(size = 10, color = "black", family = "sans"),
         axis.line = element_line(colour = "black"))
 
 
@@ -479,9 +479,9 @@ legend_bottom = ggplot(pcf, aes(x = live.dead, y = b6.total)) +
               legend.text = element_text(size = 9)) +  
   theme(legend.background = element_rect(colour = 'black', fill = 'white', linetype='solid')) +
 theme(panel.grid.major = element_blank())+
-    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1),
-        axis.text.x = element_text(size = 10, color = "black"),
-        axis.text.y = element_text(size = 10, color = "black"),
+    theme(axis.title.y = element_text(size = 12, hjust = 0.5, vjust = 1.1, family = "sans"),
+        axis.text.x = element_text(size = 10, color = "black", family = "sans"),
+        axis.text.y = element_text(size = 10, color = "black", family = "sans"),
         axis.line = element_line(colour = "black"))
 
 legend_bottom
@@ -509,7 +509,7 @@ p1
 ```
 
 ```{r eval=FALSE, include=FALSE}
-ggsave("../figures/2020-08-19_PyC_live-dead_t-test.pdf", plot = p1, width = 6.6, height = 7, units = c("in"), dpi=600 )
+ggsave("../figures/2020-08-20_PyC_live-dead_t-test.pdf", plot = p1, width = 6.6, height = 7, units = c("in"), dpi=600 )
 ```
 
 
