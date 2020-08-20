@@ -200,9 +200,9 @@ g1 = ggplot(pcf1, aes(x = kill_by, y = bpca.carbon, color=kill_by) ) + # define 
   geom_point(aes(color = kill_by, shape = bark.char), size = 3, position = position_jitter(w = 0.15, h = 0, seed=10)) +
 stat_summary(fun = mean, geom= "point", size = 4) + # Add means to the plot
   scale_shape_manual(values = c(23, 24)) +
-  labs(x=(NULL), y= "g BPCA /\nkg C") +
+  labs(x=(NULL), y= "PyC concentration\n(g BPCA per kg C)") +
   
-  scale_color_manual(values = c("tan", "darkgreen")) +
+  scale_color_manual(values = c("black", "black")) +
   scale_x_discrete(labels= c("Beetle-killed", "Fire-killed")) +
   theme_bw() + 
   theme(legend.position = "none") +  
@@ -320,9 +320,9 @@ g2 = ggplot(pcf1, aes(x = kill_by, y = bpca.soil, color=kill_by) ) + # define pl
   geom_point(aes(color = kill_by, shape = bark.char), size = 3, position = position_jitter(w = 0.15, h = 0, seed=10)) +
 stat_summary(fun = mean, geom= "point", size = 4) + # Add means to the plot
   scale_shape_manual(values = c(23, 24)) +
-  labs(x=(NULL), y= "g BPCA /\nkg material") +
+  labs(x=(NULL), y= "PyC concentration\n(g BPCA per kg material)") +
   
-  scale_color_manual(values = c("tan", "darkgreen")) +
+  scale_color_manual(values = c("black", "black")) +
   scale_x_discrete(labels= c("Beetle-killed", "Fire-killed")) +
   theme_bw() + 
   theme(legend.position = "none") +  
@@ -447,9 +447,9 @@ g3 = ggplot(pcf1, aes(x = kill_by, y = b6.total, color=kill_by) ) + # define plo
   geom_point(aes(color = kill_by, shape = bark.char), size = 3, position = position_jitter(w = 0.15, h = 0, seed=10)) +
 stat_summary(fun = mean, geom= "point", size = 4) + # Add means to the plot
   scale_shape_manual(values = c(23, 24)) +
-  labs(x=(NULL), y= "g B6CA /\nTotal BPCA") +
+  labs(x=(NULL), y= "PyC concentration\n(g B6CA per g BPCA)") +
   
-  scale_color_manual(values = c("tan", "darkgreen")) +
+  scale_color_manual(values = c("black", "black")) +
   
 scale_x_discrete(labels= c("Beetle-killed", "Fire-killed")) +
   theme_bw() + 
@@ -495,19 +495,28 @@ legend_b = get_legend(legend_bottom)
 
 ### Gridded boxplots
 
-```{r fig.height=7, fig.width=6}
+Image resolution
+- width of 85 mm for half page width figure
+- width of 170 mm for full page width figure
+- maximum height of 225 mm for figure and legend
+- image resolution of approximately 300 dpi (dots per inch) at the final size
 
-p1 = cowplot::plot_grid(g1, g2, g3, labels = c("A", "B", "C"), ncol = 1) 
+```{r fig.height=7, fig.width=6.6}
+
+p1 = cowplot::plot_grid(g1, g2, g3, labels = c("A", "B", "C"), ncol = 1) +
+  draw_plot(legend_b, x =.60, y = .80, width = .3, height = .3)  
 p1
 ```
 
 ```{r eval=FALSE, include=FALSE}
-ggsave("../figures/2020-07-28_PyC_live-dead_t-test.jpeg", plot = p1, width = 6, height = 7, units = c("in"), dpi=600 )
+ggsave("../figures/2020-08-01_PyC_live-dead_t-test.jpeg", plot = p1, width = 6, height = 7, units = c("in"), dpi=600 )
 ```
+
+
 ### Gridded with t-test data
 
 ```{r fig.height=7, fig.width=6}
-p4 = p1 + 
+p4 = cowplot::plot_grid(g1, g2, g3, labels = c("A", "B", "C"), ncol = 1) + 
   draw_plot(legend_b, x =.10, y = .59, width = .3, height = .3) + 
   draw_grob(t1,x =.66, y = .80, width = .25, height = .25, scale=.5) +
   draw_grob(t2,x =.66, y = .465, width = .25, height = .25, scale=.5) +
