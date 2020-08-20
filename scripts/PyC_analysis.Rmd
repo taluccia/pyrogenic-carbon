@@ -509,7 +509,7 @@ p1
 ```
 
 ```{r eval=FALSE, include=FALSE}
-ggsave("../figures/2020-08-01_PyC_live-dead_t-test.jpeg", plot = p1, width = 6, height = 7, units = c("in"), dpi=600 )
+ggsave("../figures/2020-08-19_PyC_live-dead_t-test.pdf", plot = p1, width = 6.6, height = 7, units = c("in"), dpi=600 )
 ```
 
 
